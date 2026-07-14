@@ -1,0 +1,23 @@
+<!-- Google File Picker Modal -->
+<dialog id="googleFilePickerModal" class="modal">
+    <div class="modal-box w-11/12 max-w-4xl glass-panel text-base-content">
+        <h3 class="font-bold text-lg mb-4" id="picker-title">Seleccionar Archivo de Drive</h3>
+        <input type="text" id="file-picker-search-input" placeholder="Buscar..."
+            class="input input-bordered w-full bg-black/20 mb-4" autofocus>
+
+        <div class="h-96 overflow-y-auto custom-scrollbar bg-black/20 rounded-lg p-2">
+            <div id="file-picker-list-container" class="space-y-1">
+                <!-- Items injected here -->
+            </div>
+        </div>
+
+        <div class="modal-action">
+            <form method="dialog">
+                <button class="btn btn-ghost hover:bg-white/10">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>

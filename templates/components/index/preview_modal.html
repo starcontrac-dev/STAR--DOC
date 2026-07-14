@@ -1,0 +1,19 @@
+<!-- Preview Modal -->
+<dialog id="previewModal" class="modal">
+    <div class="modal-box w-11/12 max-w-6xl h-[90vh] glass-panel p-0 overflow-hidden">
+        <div class="p-3 bg-black/30 flex justify-between items-center border-b border-white/10">
+            <h3 class="font-bold text-white">Vista Previa</h3>
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
+            </form>
+        </div>
+        <iframe id="preview-iframe" class="w-full h-full bg-white"></iframe>
+        <div class="p-3 bg-black/30 flex justify-end">
+            <a href="#" id="download-btn-preview" class="btn btn-primary btn-sm text-white" download>Descargar
+                Original</a>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firmar Documento - Star-Doc</title>
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        .signature-canvas {
+            touch-action: none; /* Prevenir scroll al firmar en móviles */
+        }
+        /* Scrollbar personalizado para el panel de firmas en PC */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.25);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.45);
+        }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-black/35 backdrop-blur-xl border-b border-white/5 py-4 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-600 rounded-lg shadow-indigo-500/20 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-base font-extrabold tracking-tight uppercase bg-gradient-to-r from-indigo-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">Star-Doc Firma</h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Firma Electrónica Digital Segura</p>
+            </div>
+        </div>
+        <div class="text-xs bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-gray-400">
+            República de Colombia
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto">
+        
+        <!-- Columna Izquierda: Visualizador PDF (2/3 de ancho) - Se muestra solo en PC/pantallas grandes para optimizar el espacio en móviles -->
+        <div class="hidden lg:flex lg:col-span-2 flex-col bg-white/5 border border-white/10 rounded-2xl overflow-hidden h-[75vh]">
+            <div class="px-5 py-3 bg-white/5 border-b border-white/10 flex items-center justify-between">
+                <span class="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    Vista previa del contrato
+                </span>
+                <span class="text-xs text-gray-400 font-mono">{{ document_filename }}</span>
+            </div>
+            <div class="flex-1 bg-black/40 relative">
+                <!-- Frame de visualización del archivo físico -->
+                <iframe src="/output/{{ document_filename }}" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Panel de Firma Canvas (1/3 de ancho) - Con scroll independiente en PC si es necesario -->
+        <div class="lg:col-span-1 flex flex-col space-y-6 lg:max-h-[75vh] lg:overflow-y-auto pr-0 lg:pr-1 custom-scrollbar">
+            
+            <!-- Botón de visualización del Contrato para dispositivos móviles -->
+            <div class="lg:hidden bg-white/5 border border-white/10 p-5 rounded-2xl flex flex-col items-center gap-3">
+                <div class="flex items-center gap-2 text-indigo-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="text-sm font-bold uppercase tracking-wider text-white">Contrato por Firmar</span>
+                </div>
+                <p class="text-xs text-gray-400 text-center">Para completar el proceso, por favor lea y visualice el contrato completo pulsando el botón a continuación.</p>
+                <a href="/output/{{ document_filename }}" target="_blank" 
+                   class="w-full py-3 bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Leer y Visualizar Contrato
+                </a>
+            </div>
+
+            <!-- Panel de Información y Consentimiento -->
+            <div class="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-4">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider">Detalles de la firma</h2>
+                
+                <div class="space-y-2 text-xs">
+                    <div class="grid grid-cols-3 gap-1">
+                        <span class="text-gray-400">Firmante:</span>
+                        <span class="text-white font-semibold col-span-2">{{ signer_name }}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1">
+                        <span class="text-gray-400">Correo:</span>
+                        <span class="text-white font-mono col-span-2 break-all">{{ signer_email }}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1">
+                        <span class="text-gray-400">Expiración:</span>
+                        <span class="text-red-400 font-semibold col-span-2">{{ expiration }}</span>
+                    </div>
+                </div>
+
+                <div class="divider border-t border-white/5 my-4"></div>
+
+                <!-- Checkbox de Consentimiento Legal -->
+                <div class="space-y-3">
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" id="consent-check" class="mt-1 accent-indigo-600 rounded cursor-pointer">
+                        <span class="text-[11px] leading-relaxed text-gray-400 group-hover:text-gray-200 transition-colors">
+                            Acepto firmar electrónicamente de conformidad con la <strong>Ley 527 de 1999</strong> y su <strong>Decreto 2364 de 2012</strong>. Reconozco que esta firma electrónica tiene plena validez jurídica y probatoria, equivalente a una firma manuscrita física.
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" id="biometrics-check" class="mt-1 accent-indigo-600 rounded cursor-pointer">
+                        <span class="text-[11px] leading-relaxed text-gray-400 group-hover:text-gray-200 transition-colors">
+                            Autorizo el registro de mis metadatos biométricos y técnicos (Dirección IP, marca de tiempo y agente de navegación) para garantizar la inmutabilidad y la cadena de custodia en IPFS.
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Panel de Video-Grabación de Consentimiento -->
+            <div id="video-record-panel" class="bg-white/5 border border-white/10 p-5 rounded-2xl flex flex-col space-y-4 hidden">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Video-Consentimiento
+                    </h3>
+                    <span id="recording-timer" class="text-xs text-red-500 font-semibold hidden bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">12s</span>
+                </div>
+                
+                <!-- Declaración Legal a Leer -->
+                <div class="bg-indigo-950/40 border border-indigo-500/20 p-3.5 rounded-xl">
+                    <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-wider mb-1">Declaración legal a leer en voz alta:</p>
+                    <p id="declaration-to-read" class="text-xs leading-relaxed text-white font-medium italic">"Yo, {{ signer_name }}, acepto voluntariamente los términos y condiciones. Firmo de forma electrónica y consciente de sus efectos legales."</p>
+                </div>
+
+                <!-- Recuadro de la Webcam -->
+                <div class="bg-black/50 border border-white/10 rounded-xl aspect-video overflow-hidden relative flex items-center justify-center">
+                    <video id="webcam-preview" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                    <div id="recording-overlay" class="absolute inset-0 bg-red-600/10 border-2 border-red-500 flex items-center justify-center hidden pointer-events-none">
+                        <span class="bg-red-600 text-white text-[9px] font-extrabold uppercase px-2.5 py-1 rounded shadow-lg tracking-widest animate-pulse">GRABANDO</span>
+                    </div>
+                </div>
+
+                <!-- Botones de Control de Video -->
+                <button type="button" id="start-record-btn" class="w-full py-2.5 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-white"></span>
+                    Iniciar Grabación (12 Segundos)
+                </button>
+                <p class="text-[9px] text-gray-400 text-center">Conforme a la Ley 527/99 de Colombia, este registro audiovisual certifica su consentimiento explícito y previene la suplantación de identidad.</p>
+            </div>
+
+            <!-- Panel del Canvas Pad -->
+            <div class="bg-white/5 border border-white/10 p-5 rounded-2xl flex flex-col space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Estampe su Firma</h3>
+                    <button id="clear-btn" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors bg-indigo-500/10 px-2.5 py-1 rounded border border-indigo-500/20">
+                        Borrar
+                    </button>
+                </div>
+
+                <!-- Opciones de Personalización de Firma -->
+                <div class="flex items-center justify-between text-xs text-gray-400 bg-white/5 p-2 rounded-xl border border-white/5">
+                    <div class="flex items-center gap-2">
+                        <span>Tinta:</span>
+                        <div class="flex gap-2">
+                            <button type="button" class="ink-color-btn w-4.5 h-4.5 rounded-full border border-white/20 bg-[#818cf8]" data-color="#818cf8" title="Índigo"></button>
+                            <button type="button" class="ink-color-btn w-4.5 h-4.5 rounded-full border border-white/20 bg-[#2563eb]" data-color="#2563eb" title="Azul"></button>
+                            <button type="button" class="ink-color-btn w-4.5 h-4.5 rounded-full border border-white/20 bg-[#090d16]" data-color="#090d16" title="Negro"></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span>Grosor:</span>
+                        <select id="brush-size" class="bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-xs text-gray-300 focus:outline-none focus:border-indigo-500">
+                            <option value="2">Fino</option>
+                            <option value="4" selected>Medio</option>
+                            <option value="6">Grueso</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="bg-black/50 border border-white/10 rounded-xl overflow-hidden aspect-[4/3] relative flex items-center justify-center">
+                    <canvas id="signature-canvas" class="signature-canvas w-full h-full bg-[#111322] cursor-crosshair"></canvas>
+                    <div id="canvas-overlay" class="absolute inset-0 bg-[#0e101d]/95 flex flex-col items-center justify-center p-6 text-center select-none pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span id="overlay-text" class="text-[11px] text-gray-300 font-medium leading-relaxed">Debe aceptar el consentimiento y grabar su video de declaración legal en viva voz para desbloquear la firma.</span>
+                    </div>
+                </div>
+
+                <!-- Botón de Envío -->
+                <button id="submit-btn" disabled 
+                        class="w-full py-3 bg-indigo-600/40 cursor-not-allowed border border-white/5 text-gray-400 font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Confirmar y Firmar Documento
+                </button>
+                
+                <div id="result-message" class="text-xs text-center font-medium mt-2"></div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/35 backdrop-blur-xl border-t border-white/5 py-4 px-6 text-center text-xs text-gray-500">
+        Star-Doc LegalTech Platform &copy; 2026. Todos los derechos reservados. Conforme con el marco normativo de firma electrónica de Colombia.
+    </footer>
+
+    <!-- Script de Firma Pad -->
+    <script>
+        window.SIGN_TOKEN = "{{ token }}";
+        window.SIGNER_NAME = "{{ signer_name }}";
+        window.DOCUMENT_FILENAME = "{{ document_filename }}";
+    </script>
+    <script src="/static/js/signature-pad.js?v=2.0.5"></script>
+</body>
+</html>

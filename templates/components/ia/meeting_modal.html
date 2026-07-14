@@ -1,0 +1,150 @@
+<!-- Modal de Videollamada Instantánea Meet (Componente de IA) -->
+<div x-show="meetingModal.isOpen" 
+     class="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+     style="display: none;"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0">
+     
+    <!-- Contenedor adaptado con flex y altura máxima para evitar desbordamiento en móviles y PC -->
+    <div class="relative w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden border glass-panel rounded-3xl border-white/10 shadow-2xl shadow-indigo-500/10 animate-fade-in-up"
+         @click.away="meetingModal.isOpen = false">
+        
+        <!-- Efecto de gradiente superior -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 flex-shrink-0"></div>
+
+        <!-- Encabezado del Modal (Fijo) -->
+        <div class="p-6 pb-4 border-b border-white/5 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl">
+                    <i class="bi bi-camera-video-fill text-xl"></i>
+                </div>
+                <div class="text-left">
+                    <h3 class="text-lg font-bold text-white leading-tight">Iniciar Videollamada Soberana</h3>
+                    <p class="text-xs text-gray-400">Debate o firma contratos en vivo mediante Meet</p>
+                </div>
+            </div>
+            <button @click="meetingModal.isOpen = false" 
+                    class="p-1 rounded-full text-gray-500 hover:text-white hover:bg-white/10 transition-colors">
+                <i class="bi bi-x-lg text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Cuerpo del Modal / Formulario (Scrollable vertical independiente si excede el tamaño) -->
+        <div class="p-6 space-y-4 overflow-y-auto flex-1 text-left">
+            <!-- Correos de Invitados -->
+            <div class="form-control w-full">
+                <label class="label pb-1.5">
+                    <span class="label-text text-gray-300 font-medium text-xs">Correos electrónicos de los invitados</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-500">
+                        <i class="bi bi-envelope-at-fill"></i>
+                    </span>
+                    <input type="text" 
+                           x-model="meetingModal.emails"
+                           placeholder="abogado1@email.com, cliente@email.com" 
+                           class="input input-bordered w-full pl-10 bg-slate-950/60 border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm rounded-xl text-gray-200" />
+                </div>
+                <label class="label pt-1">
+                    <span class="label-text-alt text-[10px] text-gray-500">Separa múltiples correos con comas.</span>
+                </label>
+            </div>
+
+            <!-- Nombre del Documento a Debatir (Opcional) -->
+            <div class="form-control w-full">
+                <label class="label pb-1.5">
+                    <span class="label-text text-gray-300 font-medium text-xs">Nombre del documento PDF (Opcional)</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-500">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                    </span>
+                    <input type="text" 
+                           x-model="meetingModal.documentName"
+                           placeholder="Contrato_Prestacion_Servicios.pdf" 
+                           class="input input-bordered w-full pl-10 bg-slate-950/60 border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm rounded-xl text-gray-200" />
+                </div>
+                <label class="label pt-1">
+                    <span class="label-text-alt text-[10px] text-gray-500">Para cargar automáticamente el contrato en la videollamada.</span>
+                </label>
+            </div>
+
+            <!-- Motivo de la videollamada -->
+            <div class="form-control w-full">
+                <label class="label pb-1.5">
+                    <span class="label-text text-gray-300 font-medium text-xs">Motivo o Asunto de la sesión</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-500">
+                        <i class="bi bi-card-text"></i>
+                    </span>
+                    <input type="text" 
+                           x-model="meetingModal.reason"
+                           placeholder="Debate y conciliación de contrato" 
+                           class="input input-bordered w-full pl-10 bg-slate-950/60 border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm rounded-xl text-gray-200" />
+                </div>
+            </div>
+
+            <!-- Clasificación de seguridad para la firma del documento vinculado -->
+            <div class="form-control w-full">
+                <label class="label pb-1.5">
+                    <span class="label-text text-gray-300 font-medium text-xs">Clasificación de Seguridad</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-500">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </span>
+                    <select x-model="meetingModal.classification" 
+                            class="select select-bordered w-full pl-10 bg-[#0f172a] text-white border-white/10 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl text-gray-200">
+                        <option value="public">🟢 Público (Sin encriptación en IPFS)</option>
+                        <option value="confidential">🟡 Confidencial (Cifrado simétrico AES-256)</option>
+                        <option value="chain_of_custody">🔴 Cadena de Custodia (Cifrado + Bitácora inmutable)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Checkbox para deshabilitar la subida a IPFS -->
+            <div class="form-control p-3 bg-slate-950/40 rounded-2xl border border-white/5 flex flex-row items-center justify-between">
+                <div class="flex flex-col gap-0.5 pr-2">
+                    <span class="text-xs font-semibold text-gray-300">Deshabilitar subida a IPFS</span>
+                    <span class="text-[10px] text-gray-500">No subir las firmas ni el expediente de la reunión a IPFS (Kubo/Pinata).</span>
+                </div>
+                <input type="checkbox" 
+                       x-model="meetingModal.disableIpfs" 
+                       class="toggle toggle-warning" />
+            </div>
+
+            <!-- Checkbox para enviar invitaciones por correo -->
+            <div class="form-control p-3 bg-slate-950/40 rounded-2xl border border-white/5 flex flex-row items-center justify-between">
+                <div class="flex flex-col gap-0.5 pr-2">
+                    <span class="text-xs font-semibold text-gray-300">Enviar invitaciones</span>
+                    <span class="text-[10px] text-gray-500">Enviar el link de la sala automáticamente por email.</span>
+                </div>
+                <input type="checkbox" 
+                       x-model="meetingModal.sendInvitations" 
+                       class="toggle toggle-indigo" />
+            </div>
+        </div>
+
+        <!-- Botones de Acción / Footer (Fijo en la parte inferior) -->
+        <div class="p-6 border-t border-white/5 bg-slate-950/20 flex justify-end gap-3 flex-shrink-0">
+            <button @click="meetingModal.isOpen = false" 
+                    type="button"
+                    class="btn btn-sm btn-ghost text-gray-400 hover:text-white rounded-xl">
+                Cancelar
+            </button>
+            <button @click="submitMeetingCreate()" 
+                    type="button"
+                    :disabled="meetingModal.loading"
+                    class="btn btn-sm btn-primary bg-indigo-600 hover:bg-indigo-500 text-white border-none rounded-xl shadow-lg shadow-indigo-600/20 px-5 gap-2">
+                <span x-show="meetingModal.loading" class="loading loading-spinner loading-xs"></span>
+                <i x-show="!meetingModal.loading" class="bi bi-camera-video"></i>
+                Crear Sala
+            </button>
+        </div>
+    </div>
+</div>

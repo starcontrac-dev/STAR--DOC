@@ -1,0 +1,19 @@
+{
+  "fases": [
+    {
+      "nombre": "Fase 1: Identificación y Asunto",
+      "preguntas": [
+        "1. ¿Cuál es el nombre del ciudadano peticionario?",
+        "2. ¿Cuál es el asunto o referencia de la petición que se está respondiendo?"
+      ]
+    },
+    {
+      "nombre": "Fase 2: Respuesta y Fundamento",
+      "preguntas": [
+        "1. ¿Cuál es la decisión o respuesta de fondo que se le va a dar al ciudadano? (Debe ser clara y congruente).",
+        "2. ¿Qué soportes documentales o anexos se le van a enviar adjuntos a la respuesta?"
+      ]
+    }
+  ],
+  "consejo_IA": "De acuerdo con la Ley 1755 de 2015, la respuesta debe resolver de fondo la solicitud, aun si es negativa."
+}

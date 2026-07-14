@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Verificación de Contratos y Sello de Integridad - Star-Doc{% endblock %}
+{% set hide_sidebar = True %}
+
+{% block background_media %}
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <video autoplay muted loop playsinline class="absolute min-w-full min-h-full object-cover opacity-30">
+        <source src="/static/starcontract.mp4" type="video/mp4">
+    </video>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-75"></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 relative z-10 flex flex-col items-center justify-center min-h-[85vh]">
+    <!-- Encabezado Principal -->
+    <div class="text-center max-w-2xl mb-12">
+        <div class="mb-4 flex flex-col items-center">
+            <a href="/" class="transition-transform duration-300 hover:scale-110">
+                <img src="/static/favicon.ico" alt="Star-Doc Logo"
+                    class="w-20 h-20 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]">
+            </a>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold font-mono tracking-tight text-white mb-4">
+            Portal de Verificación Pública
+        </h1>
+        <p class="text-lg text-base-content/75">
+            Verifique la autenticidad, integridad criptográfica y cadena de custodia de sus contratos y pagarés firmados electrónicamente.
+        </p>
+    </div>
+
+    <!-- Panel de Carga (Drag and Drop) -->
+    <div class="w-full max-w-3xl glass-panel rounded-2xl p-4 md:p-8 shadow-2xl border border-white/10 mb-12">
+        <!-- Zona Drop -->
+        <div id="drop-zone" class="border-2 border-dashed border-white/20 hover:border-primary/50 rounded-xl p-6 md:p-12 text-center cursor-pointer transition-all duration-300 bg-white/[0.02] flex flex-col items-center justify-center gap-4 group">
+            <input type="file" id="file-input" accept=".pdf,.md" class="hidden" />
+            <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl text-base-content/60 group-hover:text-primary group-hover:bg-primary/10 transition-all duration-300">
+                <i class="bi bi-file-earmark-pdf"></i>
+            </div>
+            <div>
+                <p class="text-base md:text-lg font-semibold text-white">Arrastre aquí el archivo firmado (PDF o Acta .md)</p>
+                <p class="text-xs md:text-sm text-base-content/50 mt-1">O haga clic para examinar sus archivos locales</p>
+            </div>
+            <button id="file-select-btn" type="button" class="btn btn-sm btn-outline border-white/20 hover:bg-white/10 hover:border-white/40 text-white mt-2">
+                Seleccionar Archivo
+            </button>
+        </div>
+
+        <!-- Archivo Seleccionado -->
+        <div id="file-info" class="hidden flex flex-col items-center justify-center p-4 md:p-8 bg-white/[0.03] rounded-xl border border-white/5 gap-4">
+            <div class="flex items-center gap-4 w-full justify-center">
+                <div class="text-4xl text-primary"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                <div class="text-left truncate max-w-[60vw] md:max-w-md">
+                    <p id="selected-file-name" class="font-bold text-white text-base md:text-lg truncate">documento.pdf</p>
+                    <p class="text-xs text-base-content/50">Formato listo para verificación</p>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto justify-center mt-2">
+                <button id="reset-btn" type="button" class="btn btn-outline btn-neutral btn-sm px-6 w-full sm:w-auto">
+                    Cambiar Archivo
+                </button>
+                <button id="verify-btn" type="button" class="btn btn-primary bg-gradient-to-r from-primary to-secondary border-none hover:shadow-lg hover:shadow-primary/40 text-white btn-sm px-8 w-full sm:w-auto" disabled>
+                    Verificar Firma
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado de Carga (Spinner) -->
+    <div id="loading-state" class="hidden flex flex-col items-center justify-center gap-4 py-12">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <p class="text-base-content/75 font-mono text-sm">Calculando hashes criptográficos y validando en IPFS...</p>
+    </div>
+
+    <!-- Resultados de la Verificación (Oculto al inicio) -->
+    <div id="results-state" class="hidden w-full max-w-4xl flex flex-col gap-8 mb-16 animate-fade-in">
+        <!-- Banner de Integridad Criptográfica -->
+        <div id="integrity-banner" class="alert shadow-lg flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 p-6 border transition-all duration-500">
+            <div class="flex-shrink-0">
+                <i id="integrity-icon" class="bi text-4xl"></i>
+            </div>
+            <div>
+                <h3 id="integrity-title" class="font-bold text-xl mb-1 text-white">ESTADO DE VERIFICACIÓN</h3>
+                <p id="integrity-desc" class="text-sm leading-relaxed opacity-90">
+                    Cargando descripción...
+                </p>
+            </div>
+        </div>
+
+        <!-- Ficha Técnica del Expediente -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <!-- Detalles del Documento -->
+            <div class="glass-panel rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col justify-between gap-4">
+                <h3 class="font-mono font-semibold text-base md:text-lg text-white border-b border-white/5 pb-3">
+                    <i class="bi bi-info-circle mr-2 text-primary"></i>Datos del Documento
+                </h3>
+                <div class="text-xs md:text-sm flex flex-col gap-3">
+                    <div>
+                        <span class="text-base-content/50 block text-xs uppercase tracking-wider mb-1">Nombre de Archivo</span>
+                        <span id="doc-name-display" class="font-bold text-white break-all">documento.pdf</span>
+                    </div>
+                    <div>
+                        <span class="text-base-content/50 block text-xs uppercase tracking-wider mb-1">Hash de Integridad SHA-256</span>
+                        <code id="doc-hash-display" class="font-mono text-xs bg-black/40 p-2 rounded block break-all text-accent border border-white/5 select-all">
+                            c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2
+                        </code>
+                    </div>
+                    <div>
+                        <span class="text-base-content/50 block text-xs uppercase tracking-wider mb-1">Fecha de Sello de Tiempo (UTC)</span>
+                        <span id="doc-date-display" class="text-white font-medium text-xs md:text-sm">No disponible</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seguridad e Inmutabilidad IPFS -->
+            <div class="glass-panel rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col justify-between gap-4">
+                <div>
+                    <h3 class="font-mono font-semibold text-base md:text-lg text-white border-b border-white/5 pb-3">
+                        <i class="bi bi-shield-check mr-2 text-primary"></i>Infraestructura y Conservación
+                    </h3>
+                    <div class="text-xs md:text-sm flex flex-col gap-4 mt-4">
+                        <div class="flex items-start gap-3">
+                            <div class="text-success text-lg mt-0.5"><i class="bi bi-shield-lock-fill"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm">Equivalencia Funcional Garantizada</h4>
+                                <p class="text-xs text-base-content/60 mt-0.5">Cumple con los principios de no repudio, autenticidad y conservación inalterada conforme a la normatividad colombiana.</p>
+                            </div>
+                        </div>
+                        <div id="ipfs-container" class="flex flex-col gap-2 mt-2 bg-black/20 p-3 md:p-4 rounded border border-white/5">
+                            <span class="text-base-content/50 text-xs uppercase tracking-wider">Dirección Criptográfica en IPFS (Kubo)</span>
+                            <span id="ipfs-cid-display" class="font-mono text-xs break-all text-white select-all">Qm...</span>
+                            <a id="ipfs-link" href="#" target="_blank" class="btn btn-xs btn-outline btn-primary gap-1 w-fit mt-1 text-xs">
+                                <i class="bi bi-box-arrow-up-right"></i> Ver en IPFS Gateway
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Firmantes Autorizados & Evidencias Biométricas -->
+        <div class="glass-panel rounded-2xl p-4 md:p-6 border border-white/10 w-full">
+            <h3 class="font-mono font-semibold text-base md:text-lg text-white border-b border-white/5 pb-3 mb-6">
+                <i class="bi bi-people mr-2 text-primary"></i>Firmantes y Cadena de Custodia (Evidencias de Firma)
+            </h3>
+            <div id="signers-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                <!-- Tarjetas de firmantes inyectadas dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Declaración Legal y Equivalencia Funcional -->
+        <div class="glass-panel rounded-2xl p-4 md:p-6 border border-white/10 bg-white/[0.01] w-full">
+            <h4 class="font-bold text-white text-xs md:text-sm uppercase tracking-wider mb-2">Fundamento Legal (República de Colombia)</h4>
+            <p class="text-xs text-base-content/60 leading-relaxed">
+                De conformidad con el <strong>Artículo 7 de la Ley 527 de 1999</strong> y el <strong>Decreto 2364 de 2012</strong>, las firmas electrónicas registradas en este reporte tienen plena validez y fuerza vinculante, siempre que se garantice su confiabilidad e integridad. El método de atribución (doble factor OTP y video evidencia) y la inalterabilidad criptográfica del documento (sello hash SHA-256 e IPFS) satisfacen plenamente los requisitos probatorios de originalidad de los mensajes de datos en el territorio colombiano.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/verify-controller.js" type="application/javascript"></script>
+{% endblock %}

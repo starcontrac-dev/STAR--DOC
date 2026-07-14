@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Star-Doc{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-end">
+        <div>
+            <h2 class="text-3xl font-bold font-mono text-white">Dashboard</h2>
+            <p class="text-base-content/60">Resumen de actividad del sistema</p>
+        </div>
+        <div class="badge badge-primary badge-outline gap-2 p-3">
+            <i class="bi bi-circle-fill text-xs text-success"></i> Sistema Operativo
+        </div>
+    </div>
+
+    <!-- Stats Row (Public) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Docs Generated -->
+        <div class="stats shadow glass-card text-white">
+            <div class="stat">
+                <div class="stat-figure text-primary">
+                    <i class="bi bi-file-earmark-check text-3xl"></i>
+                </div>
+                <div class="stat-title text-base-content/70">Documentos Generados</div>
+                <div class="stat-value text-primary" id="stat-docs">-</div>
+                <div class="stat-desc text-base-content/50">Total acumulado</div>
+            </div>
+        </div>
+
+        <!-- Active Templates -->
+        <div class="stats shadow glass-card text-white">
+            <div class="stat">
+                <div class="stat-figure text-secondary">
+                    <i class="bi bi-file-earmark-text text-3xl"></i>
+                </div>
+                <div class="stat-title text-base-content/70">Plantillas Activas</div>
+                <div class="stat-value text-secondary" id="stat-templates">-</div>
+                <div class="stat-desc text-base-content/50">Disponibles ahora</div>
+            </div>
+        </div>
+
+        <!-- Time Saved -->
+        <div class="stats shadow glass-card text-white">
+            <div class="stat">
+                <div class="stat-figure text-accent">
+                    <i class="bi bi-lightning-charge text-3xl"></i>
+                </div>
+                <div class="stat-title text-base-content/70">Tiempo Ahorrado</div>
+                <div class="stat-value text-accent" id="stat-time">-</div>
+                <div class="stat-desc text-base-content/50">Estimado (20m/doc)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Stats Row (Hidden by default) -->
+    <div id="admin-stats-row" class="hidden">
+        <div class="divider text-primary font-mono text-sm opacity-50 my-8">PANEL DE ADMINISTRADOR — starcontract</div>
+        
+        <!-- Fila 1: Usuarios y Sistema -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+            <div class="stats shadow glass-card text-white">
+                <div class="stat p-3">
+                    <div class="stat-figure text-info"><i class="bi bi-people text-2xl"></i></div>
+                    <div class="stat-title text-base-content/70 text-xs">Usuarios</div>
+                    <div class="stat-value text-info text-2xl" id="stat-users">-</div>
+                </div>
+            </div>
+            <div class="stats shadow glass-card text-white">
+                <div class="stat p-3">
+                    <div class="stat-figure text-success"><i class="bi bi-cpu text-2xl"></i></div>
+                    <div class="stat-title text-base-content/70 text-xs">CPU</div>
+                    <div class="stat-value text-success text-2xl" id="stat-cpu">-</div>
+                </div>
+            </div>
+            <div class="stats shadow glass-card text-white">
+                <div class="stat p-3">
+                    <div class="stat-figure text-purple-400"><i class="bi bi-memory text-2xl"></i></div>
+                    <div class="stat-title text-base-content/70 text-xs">RAM</div>
+                    <div class="stat-value text-purple-400 text-2xl" id="stat-ram">-</div>
+                </div>
+            </div>
+            <div class="stats shadow glass-card text-white">
+                <div class="stat p-3">
+                    <div class="stat-figure text-warning"><i class="bi bi-hdd-network text-2xl"></i></div>
+                    <div class="stat-title text-base-content/70 text-xs">Disco</div>
+                    <div class="stat-value text-warning text-2xl" id="stat-disk">-</div>
+                </div>
+            </div>
+            <div class="stats shadow glass-card text-white">
+                <div class="stat p-3">
+                    <div class="stat-figure text-cyan-400"><i class="bi bi-clock-history text-2xl"></i></div>
+                    <div class="stat-title text-base-content/70 text-xs">Uptime</div>
+                    <div class="stat-value text-cyan-400 text-lg" id="stat-uptime">-</div>
+                </div>
+            </div>
+            <div class="stats shadow glass-card text-white">
+                <div class="stat p-3">
+                    <div class="stat-figure text-pink-400"><i class="bi bi-tools text-2xl"></i></div>
+                    <div class="stat-title text-base-content/70 text-xs">Tool Calls</div>
+                    <div class="stat-value text-pink-400 text-2xl" id="stat-tool-calls">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila de Revisiones Pendientes (Workflow Opción B) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Bandeja de Contratos Pendientes -->
+            <div class="card glass-panel shadow-xl border border-white/5 bg-gradient-to-br from-amber-500/5 to-transparent">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-white text-sm flex items-center gap-2 mb-4">
+                        <i class="bi bi-file-earmark-check text-amber-400"></i> Contratos Pendientes de Aprobación
+                        <span class="badge badge-sm badge-warning ml-auto font-mono text-white" id="pending-docs-count">0</span>
+                    </h3>
+                    <div id="pending-docs-list" class="space-y-2 max-h-60 overflow-y-auto scrollbar-thin">
+                        <p class="text-gray-500 text-xs py-4 text-center">No hay contratos pendientes de revisión.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bandeja de Plantillas Pendientes -->
+            <div class="card glass-panel shadow-xl border border-white/5 bg-gradient-to-br from-violet-500/5 to-transparent">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-white text-sm flex items-center gap-2 mb-4">
+                        <i class="bi bi-file-earmark-text text-violet-400"></i> Plantillas Pendientes de Aprobación
+                        <span class="badge badge-sm badge-secondary ml-auto font-mono text-white" id="pending-templates-count">0</span>
+                    </h3>
+                    <div id="pending-templates-list" class="space-y-2 max-h-60 overflow-y-auto scrollbar-thin">
+                        <p class="text-gray-500 text-xs py-4 text-center">No hay plantillas pendientes de revisión.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila 2: Skills y Herramientas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Skills Card -->
+            <div class="card glass-panel shadow-xl border border-white/5">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-white text-sm flex items-center gap-2 mb-4">
+                        <i class="bi bi-puzzle text-violet-400"></i> Skills Activos
+                        <span class="badge badge-sm badge-primary ml-auto" id="skills-count">0</span>
+                    </h3>
+                    <div id="skills-list" class="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
+                        <p class="text-gray-500 text-xs">Cargando skills...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Tools Chart -->
+            <div class="card glass-panel shadow-xl border border-white/5">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-white text-sm flex items-center gap-2 mb-4">
+                        <i class="bi bi-bar-chart text-pink-400"></i> Herramientas Más Usadas
+                    </h3>
+                    <div class="h-56">
+                        <canvas id="toolsRankingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila 3: Log de Actividad Reciente -->
+        <div class="card glass-panel shadow-xl border border-white/5 mb-6">
+            <div class="card-body p-5">
+                <h3 class="card-title text-white text-sm flex items-center gap-2 mb-4">
+                    <i class="bi bi-terminal text-emerald-400"></i> Actividad Reciente de Herramientas
+                </h3>
+                <div id="recent-tools-log" class="max-h-48 overflow-y-auto scrollbar-thin font-mono text-[11px] space-y-1">
+                    <p class="text-gray-500">Sin actividad todavía...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'components/dashboard/appointments_section.html' %}
+
+    {% include 'components/dashboard/ipfs_infrastructure.html' %}
+
+    <!-- Charts & Activity Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6">
+        <!-- Main Chart: Productivity Timeline -->
+        <div class="col-span-2 card glass-panel shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-white mb-4">Tendencia de Productividad (14 días)</h3>
+                <canvas id="docsChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Actions -->
+        <div class="col-span-1 space-y-6">
+            <!-- Quick Actions -->
+            <div
+                class="card glass-panel shadow-xl bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20">
+                <div class="card-body">
+                    <h3 class="card-title text-white text-lg">Acciones Rápidas</h3>
+                    <div class="flex flex-col gap-3 mt-2">
+                        <a href="/home?active_tab=interactive" class="btn btn-primary btn-sm gap-2 text-white">
+                            <i class="bi bi-plus-lg"></i> Crear Nuevo Doc
+                        </a>
+                        <a href="/home?active_tab=manage" class="btn btn-outline btn-sm gap-2 text-white">
+                            <i class="bi bi-cloud-upload"></i> Subir Plantilla
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Files List -->
+            <div class="card glass-panel shadow-xl">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-white text-base mb-4">Archivos Recientes</h3>
+                    {% if recent_activity %}
+                    <ul class="space-y-3">
+                        {% for file in recent_activity %}
+                        <li class="flex items-center gap-3 text-sm group cursor-default">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                <i class="bi bi-file-earmark-word text-blue-400"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-gray-300 truncate font-mono">{{ file }}</p>
+                                <p class="text-xs text-gray-500">Recién generado</p>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-gray-500 text-sm">No hay actividad reciente.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
+        <!-- Template Usage -->
+        <div class="card glass-panel shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-white mb-4">Uso de Plantillas (Top 5)</h3>
+                <canvas id="templateChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
+        <!-- Hourly Activity -->
+        <div class="card glass-panel shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-white mb-4">Actividad por Hora (Pico)</h3>
+                <canvas id="hourlyChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Charts Row -->
+    <div id="admin-charts-row" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6">
+        <!-- Storage Distribution -->
+        <div class="col-span-1 card glass-panel shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-white mb-4">Distribución de Almacenamiento</h3>
+                <div class="h-64 flex justify-center">
+                    <canvas id="storageChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Performance & Cost (FASE 8) -->
+        <div class="col-span-2 card glass-panel shadow-xl bg-gradient-to-br from-cyan-900/10 to-blue-900/10 border-cyan-500/20">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="card-title text-white flex items-center gap-2">
+                        <i class="bi bi-cpu text-cyan-400"></i> IA Control Center (Gemini)
+                    </h3>
+                    <div id="ai-health-badge" class="badge badge-success gap-2 p-3 font-mono text-[10px]">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        SISTEMA NERVIOSO OK
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Costo Estimado</p>
+                        <p class="text-xl font-bold text-green-400" id="stat-ai-cost">$0.00</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Tokens Totales</p>
+                        <p class="text-xl font-bold text-cyan-400" id="stat-ai-tokens">0</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Latencia Global</p>
+                        <p class="text-xl font-bold text-purple-400" id="stat-ai-latency">0ms</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Tasa Ética</p>
+                        <p class="text-xl font-bold text-blue-400" id="stat-ai-success">0%</p>
+                    </div>
+                </div>
+
+                <h4 class="text-xs font-mono text-gray-500 mb-4 flex items-center gap-2">
+                    <i class="bi bi-shield-check"></i> ESTADO DE CIRCUIT BREAKERS POR MODELO
+                </h4>
+                <div class="flex flex-wrap gap-3 mb-6" id="ai-models-status">
+                    <!-- Dinámico -->
+                </div>
+
+                <div class="h-64">
+                    <canvas id="aiModelChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'components/dashboard/document_review_modal.html' %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/static/js/dashboard-controller.js"></script>
+{% endblock %}

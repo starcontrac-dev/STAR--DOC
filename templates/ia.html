@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat de IA - STARCONTRACT</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+
+    <!-- PWA Config -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="STAR-DOC">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap"
+        rel="stylesheet">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="/static/js/tts-controller.js"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+    </script>
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #050505;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+            height: 100%;
+        }
+
+        .chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Toggle system-instruction styles */
+        .system-wrapper {
+            transition: max-height 0.22s ease, padding 0.18s ease;
+            overflow: hidden;
+            max-height: 120px;
+        }
+
+        .legal-sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(100%);
+            width: 380px;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .legal-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .history-sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-100%);
+            width: 260px;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .history-sidebar.open {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .legal-sidebar {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .history-sidebar {
+                width: 80% !important;
+                max-width: 280px !important;
+            }
+        }
+
+        .score-circle {
+            transition: stroke-dashoffset 1s ease-out;
+        }
+
+        .system-wrapper.collapsed {
+            max-height: 42px;
+        }
+
+        /* espacio reducido cuando está colapsado */
+        .system-toggle-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 6px 8px;
+            border-radius: 8px;
+            color: #4b5563;
+        }
+
+        .system-toggle-btn:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: #374151;
+        }
+
+        .system-toggle-label {
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header {
+            background-color: #0d1117;
+            border-bottom: 1px solid #30363d;
+            color: white;
+        }
+
+        /* Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        /* Thinking Indicator Pulse */
+        @keyframes aurora-pulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(0.95);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        .thinking-pulse {
+            animation: aurora-pulse 1.5s infinite ease-in-out;
+            background: linear-gradient(90deg, #3b82f6, #a855f7, #06b6d4);
+            background-size: 200% 200%;
+            animation: aurora-pulse 1.5s infinite, gradient-move 3s infinite linear;
+        }
+
+        @keyframes gradient-move {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .messages-container {
+            overflow-x: hidden;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .message {
+            max-width: 92%;
+            padding: 0.75rem 1rem;
+            border-radius: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            word-wrap: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .message {
+                max-width: 85%;
+            }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(124, 58, 237, 0.15) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            color: #f3f4f6;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.5rem;
+            box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.05);
+        }
+
+        .bot-message {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.45) 0%, rgba(15, 23, 42, 0.35) 100%);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            color: #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 0.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .bot-message pre {
+            background-color: #1f2937;
+            color: #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+
+        .bot-message code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .bot-message table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .bot-message th,
+        .bot-message td {
+            border: 1px solid #d1d5db;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .bot-message th {
+            background-color: #e5e7eb;
+        }
+
+        .bot-message ul,
+        .bot-message ol {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .loading-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #mic-btn.recording {
+            color: #ef4444;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* Estilos del nuevo textarea para que se auto-expanda y sea legible */
+        .chat-input-textarea {
+            resize: none;
+            min-height: 48px;
+            max-height: 200px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            color: #f3f4f6;
+            background-color: transparent;
+            border: none;
+        }
+
+        .chat-input-textarea:focus {
+            border: none;
+            box-shadow: none;
+            outline: none;
+        }
+
+        @media (max-width: 640px) {
+            .chat-input-textarea {
+                font-size: 1.02rem;
+                padding-top: 0.6rem;
+                padding-bottom: 0.6rem;
+            }
+
+            .chat-container {
+                border-radius: 0;
+            }
+
+            /* Ajuste de padding inferior para evitar que el notch o la barra de inicio tapen el formulario */
+            form {
+                padding-bottom: calc(1.2rem + env(safe-area-inset-bottom)) !important;
+            }
+        }
+
+        /* Ajustar el contenedor de botones para que los botones floten correctamente sobre el textarea */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+        }
+
+        /* Slash Menu Styles - Premium Glassmorphism Dark Mode */
+        /* NOTA: NO usar display:none aquí — Alpine x-show lo gestiona */
+        #slash-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            width: 320px;
+            max-height: 280px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            z-index: 50;
+            margin-bottom: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+        }
+
+        #slash-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #slash-menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #slash-menu::-webkit-scrollbar-thumb {
+            background-color: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+
+        /* At-Mention Menu Styles - Premium Glassmorphism Esmeralda Dark Mode */
+        #at-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            width: 340px;
+            max-height: 280px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            z-index: 50;
+            margin-bottom: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+        }
+
+        #at-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #at-menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #at-menu::-webkit-scrollbar-thumb {
+            background-color: rgba(16, 185, 129, 0.3);
+            border-radius: 3px;
+        }
+
+        .at-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-left: 3px solid transparent;
+        }
+
+        .at-item:hover,
+        .at-item.active {
+            background-color: rgba(16, 185, 129, 0.16);
+            transform: translateX(4px);
+            border-left-color: #10b981;
+        }
+
+        .at-item .at-icon {
+            width: 1.1rem;
+            height: 1.1rem;
+            color: #34d399;
+            flex-shrink: 0;
+            transition: color 0.2s;
+        }
+
+        .at-item:hover .at-icon,
+        .at-item.active .at-icon {
+            color: #6ee7b7;
+        }
+
+        .at-item .at-name {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .at-item:hover .at-name,
+        .at-item.active .at-name {
+            color: #ffffff;
+        }
+
+        .at-item .at-ext {
+            font-size: 0.65rem;
+            color: #a7f3d0;
+            margin-left: auto;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .slash-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-left: 3px solid transparent;
+        }
+
+        .slash-item:hover,
+        .slash-item.active {
+            background-color: rgba(99, 102, 241, 0.16);
+            transform: translateX(4px);
+            border-left-color: #6366f1;
+        }
+
+        .slash-item .icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #818cf8;
+            transition: color 0.2s;
+        }
+
+        .slash-item:hover .icon,
+        .slash-item.active .icon {
+            color: #a5b4fc;
+        }
+
+        .slash-item .cmd {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .slash-item:hover .cmd,
+        .slash-item.active .cmd {
+            color: #ffffff;
+        }
+
+        .slash-item .desc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-left: auto;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: color 0.2s;
+            text-align: right;
+        }
+
+        .slash-item:hover .desc,
+        .slash-item.active .desc {
+            color: #cbd5e1;
+        }
+
+        /* Mermaid Styles */
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* === TTS Styles === */
+        .tts-speak-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            padding: 4px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tts-speak-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+        }
+
+        .tts-speak-btn.tts-loading {
+            color: #f59e0b;
+            animation: aurora-pulse 1s infinite;
+        }
+
+        .tts-speak-btn.tts-playing {
+            color: #6366f1;
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .tts-auto-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .tts-auto-toggle:hover {
+            color: #d1d5db;
+        }
+
+        .tts-auto-toggle.active {
+            color: #818cf8;
+        }
+
+        .tts-auto-toggle .toggle-dot {
+            width: 32px;
+            height: 18px;
+            border-radius: 9px;
+            background: #374151;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .tts-auto-toggle.active .toggle-dot {
+            background: #6366f1;
+        }
+
+        .tts-auto-toggle .toggle-dot::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.2s;
+        }
+
+        .tts-auto-toggle.active .toggle-dot::after {
+            transform: translateX(14px);
+        }
+
+        /* Animaciones para indicador visual de onda de micrófono */
+        @keyframes bounce-bar-1 {
+
+            0%,
+            100% {
+                height: 4px;
+            }
+
+            50% {
+                height: 16px;
+            }
+        }
+
+        @keyframes bounce-bar-2 {
+
+            0%,
+            100% {
+                height: 6px;
+            }
+
+            50% {
+                height: 12px;
+            }
+        }
+
+        @keyframes bounce-bar-3 {
+
+            0%,
+            100% {
+                height: 3px;
+            }
+
+            50% {
+                height: 18px;
+            }
+        }
+
+        @keyframes bounce-bar-4 {
+
+            0%,
+            100% {
+                height: 5px;
+            }
+
+            50% {
+                height: 10px;
+            }
+        }
+
+        @keyframes bounce-bar-5 {
+
+            0%,
+            100% {
+                height: 7px;
+            }
+
+            50% {
+                height: 14px;
+            }
+        }
+
+        .animate-audio-bar-1 {
+            animation: bounce-bar-1 0.6s infinite ease-in-out;
+        }
+
+        .animate-audio-bar-2 {
+            animation: bounce-bar-2 0.7s infinite ease-in-out 0.1s;
+        }
+
+        .animate-audio-bar-3 {
+            animation: bounce-bar-3 0.5s infinite ease-in-out 0.2s;
+        }
+
+        .animate-audio-bar-4 {
+            animation: bounce-bar-4 0.8s infinite ease-in-out 0.05s;
+        }
+
+        .animate-audio-bar-5 {
+            animation: bounce-bar-5 0.6s infinite ease-in-out 0.15s;
+        }
+
+        /* 🧘 MODO LITIGIO ZEN EN IA CHAT 🧘 */
+        body,
+        #messages,
+        form,
+        .message-content {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.zen-active {
+            background-color: #030712 !important;
+            /* Fondo más oscuro y enfocado */
+        }
+
+        /* Ocultar elementos de distracción en chat */
+        body.zen-active .non-zen {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* Centrar la conversación y darle ancho óptimo de lectura */
+        body.zen-active #messages {
+            max-width: 52rem !important;
+            /* ~830px */
+            margin-left: auto !important;
+            margin-right: auto !important;
+            width: 100% !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+
+        /* Centrar la caja de texto en modo zen */
+        body.zen-active form {
+            max-width: 52rem !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            width: 100% !important;
+            background: rgba(15, 23, 42, 0.45) !important;
+            border-radius: 1.5rem !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* Tipografía Serif jurídica premium para las respuestas */
+        body.zen-active .message-content {
+            font-family: 'Merriweather', Georgia, Cambria, serif !important;
+            font-size: 1.05rem !important;
+            line-height: 1.85 !important;
+        }
+
+        /* Optimización móvil en Modo Zen */
+        @media (max-width: 768px) {
+            body.zen-active #messages {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+
+            body.zen-active form {
+                border-radius: 0.75rem !important;
+                padding: 0.5rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden text-gray-200 selection:bg-cyan-500/30 selection:text-white" x-data="chatApp()">
+
+    <!-- ========================================= -->
+    <!-- SISTEMA DE NOTIFICACIONES TOAST (IA VIEW) -->
+    <!-- Reemplaza los alert() nativos del navegador -->
+    <!-- ========================================= -->
+    <div id="ia-toast-container"
+        class="fixed bottom-4 right-4 z-[9999] flex flex-col items-end gap-2 pointer-events-none"
+        style="max-width: 360px;"></div>
+    <script>
+        /**
+         * Sistema de notificaciones Toast para la vista de IA.
+         * Igual que el de base.html pero autónomo para esta vista iframe.
+         * Uso: window.showToast('Mensaje', 'success' | 'error' | 'warning' | 'info')
+         */
+        window.showToast = function (message, type = 'info', duration = 5000) {
+            const container = document.getElementById('ia-toast-container');
+            if (!container) return;
+
+            const id = 'toast-ia-' + Math.random().toString(36).substr(2, 8);
+
+            const configs = {
+                success: { icon: 'bi-check-circle-fill', color: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-950/50', shadow: 'shadow-emerald-500/10' },
+                error: { icon: 'bi-x-octagon-fill', color: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-950/50', shadow: 'shadow-red-500/10' },
+                warning: { icon: 'bi-exclamation-triangle-fill', color: 'text-amber-400', border: 'border-amber-500/30', bg: 'bg-amber-950/50', shadow: 'shadow-amber-500/10' },
+                info: { icon: 'bi-info-circle-fill', color: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-950/50', shadow: 'shadow-blue-500/10' }
+            };
+            const c = configs[type] || configs.info;
+
+            const toastEl = document.createElement('div');
+            toastEl.id = id;
+            toastEl.className = `pointer-events-auto w-full ${c.bg} border ${c.border} backdrop-blur-xl rounded-xl shadow-lg ${c.shadow} p-3.5 flex items-start gap-3 transition-all duration-300 translate-x-4 opacity-0`;
+            toastEl.innerHTML = `
+                <i class="bi ${c.icon} ${c.color} text-base mt-0.5 flex-shrink-0"></i>
+                <p class="text-xs text-gray-200 leading-relaxed flex-1">${message}</p>
+                <button onclick="document.getElementById('${id}')?.remove()" class="text-gray-500 hover:text-white transition-colors flex-shrink-0 -mt-0.5">
+                    <i class="bi bi-x text-sm"></i>
+                </button>
+            `;
+
+            container.appendChild(toastEl);
+
+            // Animación de entrada
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toastEl.classList.remove('translate-x-4', 'opacity-0');
+                });
+            });
+
+            // Barra de progreso y auto-cierre
+            setTimeout(() => {
+                if (toastEl.parentNode) {
+                    toastEl.classList.add('translate-x-4', 'opacity-0');
+                    setTimeout(() => toastEl.remove(), 300);
+                }
+            }, duration);
+        };
+    </script>
+
+    <!-- Sidebar de Historial de Chats -->
+    <aside class="history-sidebar fixed top-0 left-0 h-full flex flex-col shadow-2xl text-white overflow-hidden"
+        :class="{'open': historySidebarOpen}">
+        <div class="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
+            <h2 class="text-xs font-black uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                <i class="bi bi-clock-history text-indigo-400"></i>
+                Historial de Chats
+            </h2>
+            <button type="button" @click="toggleHistorySidebar()"
+                class="text-gray-400 hover:text-white transition-colors lg:hidden">
+                <i class="bi bi-x-lg text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Botón Nueva Conversación -->
+        <div class="p-4 border-b border-white/5">
+            <button type="button" @click="createNewThread()"
+                class="w-full py-2 px-3 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-bold rounded-xl border border-indigo-500/30 hover:border-indigo-500 transition-all duration-200 flex items-center justify-center gap-2 group active:scale-[0.98]">
+                <i class="bi bi-plus-lg group-hover:scale-110 transition-transform"></i>
+                Nueva Conversación
+            </button>
+        </div>
+
+        <!-- Lista de Hilos -->
+        <div class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-1 select-none">
+            <template x-if="threads.length === 0">
+                <div class="text-center text-gray-500 text-xs py-8">
+                    No hay conversaciones.
+                </div>
+            </template>
+            <template x-for="thread in threads" :key="thread.id">
+                <div class="group flex items-center justify-between p-2 rounded-xl border border-transparent transition-all cursor-pointer text-xs"
+                    :class="thread.id === currentThreadId ? 'bg-indigo-600/10 border-indigo-500/20 text-white font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'"
+                    @click="switchThread(thread.id)">
+
+                    <!-- Icono y Título del Hilo -->
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <i class="bi bi-chat-left-text shrink-0 text-indigo-400/80"></i>
+
+                        <!-- Ver si está editando -->
+                        <template x-if="editingThreadId === thread.id">
+                            <input type="text" x-model="editingThreadTitle" @blur="saveRename(thread.id)"
+                                @keydown.enter.prevent="saveRename(thread.id)"
+                                @keydown.escape.prevent="editingThreadId = null" @click.stop
+                                class="bg-slate-900 text-white px-1 py-0.5 rounded border border-indigo-500/50 w-full outline-none text-xs focus:ring-1 focus:ring-indigo-500"
+                                x-init="$nextTick(() => $el.focus())">
+                        </template>
+                        <template x-if="editingThreadId !== thread.id">
+                            <span class="truncate block w-full" x-text="thread.title"
+                                @dblclick.stop="startRename(thread)"></span>
+                        </template>
+                    </div>
+
+                    <!-- Acciones del Hilo (Hover) -->
+                    <div
+                        class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                        <button type="button" @click.stop="startRename(thread)" title="Renombrar"
+                            class="p-0.5 hover:text-indigo-400 text-gray-500 transition-colors">
+                            <i class="bi bi-pencil text-[10px]"></i>
+                        </button>
+                        <button type="button" @click.stop="deleteThread(thread.id)" title="Eliminar"
+                            class="p-0.5 hover:text-red-400 text-gray-500 transition-colors">
+                            <i class="bi bi-trash text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </aside>
+
+    {% include 'components/ia/legal_sidebar.html' %}
+
+    <div class="chat-container bg-transparent overflow-hidden h-screen transition-all duration-300"
+        :class="{'lg:mr-[380px]': sidebarOpen, 'lg:ml-[260px]': historySidebarOpen}">
+        <div
+            class="chat-header p-3 md:p-4 flex items-center justify-between bg-black/40 backdrop-blur-xl border-b border-white/5 sticky top-0 z-10 shadow-lg">
+            <div class="flex items-center">
+                <!-- Botón Toggle de Historial -->
+                <button type="button" @click="toggleHistorySidebar()" title="Historial de conversaciones"
+                    class="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-white/5 rounded-xl transition-all mr-2 shrink-0">
+                    <i class="bi bi-layout-sidebar text-lg"></i>
+                </button>
+                <h1 class="text-lg md:text-xl font-bold flex items-center text-white">
+                    <div class="p-2 bg-indigo-600 rounded-lg mr-2 shadow-indigo-500/20 shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" />
+                        </svg>
+                    </div>
+                    <span class="tracking-tight uppercase text-sm md:text-base font-black opacity-90">LUKA AI</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-1 md:gap-2">
+
+                <!-- Botón Comparador Diff IA -->
+                <button type="button" @click="$dispatch('open-diff-modal')" title="Comparar Documentos (Diff IA)"
+                    class="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-white/5 rounded-xl transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </button>
+                <button type="button" @click="openRagVaultModal()" title="Mi Bóveda Documental"
+                    class="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-white/5 rounded-xl transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 15v2m0 0v2m0-2h2m-2 0H10m4-7V6a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h8m4 0h4a2 2 0 002-2v-4a2 2 0 00-2-2h-4v6z" />
+                    </svg>
+                </button>
+                <button @click="toggleTTSGlobalPause" :class="{'hidden': !isTTSPlaying}"
+                    class="flex items-center justify-center text-gray-400 hover:text-indigo-400 focus:outline-none transition-colors"
+                    title="Pausar/Reanudar (Alt+P)">
+                    <svg x-show="!ttsPaused" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg x-show="ttsPaused" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+                <div @click="toggleTTSAuto" class="tts-auto-toggle" :class="{'active': ttsAutoRead}"
+                    title="Auto-lectura de respuestas">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+                    </svg>
+                    <span>Voz</span>
+                    <div class="toggle-dot"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="messages" x-ref="messagesContainer" @click="handleMessageClick($event)"
+            class="messages-container flex-1 p-4 md:p-6 overflow-y-auto overflow-x-hidden flex flex-col space-y-4 bg-transparent">
+            <template x-for="msg in chatHistory" :key="msg.id">
+                <div class="message p-4 rounded-2xl text-sm relative group animate-fade-in-up"
+                    :class="msg.role === 'user' ? 'user-message self-end ml-4 md:ml-12 rounded-br-none' : 'bot-message self-start mr-4 md:mr-12 rounded-bl-none'">
+
+                    <!-- Streaming Status Indicator -->
+                    <template x-if="msg.role === 'model' && msg.isStreaming && msg.statusText">
+                        <div class="text-xs text-indigo-500 font-medium mb-1 flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full thinking-pulse bg-indigo-500"></div>
+                            <span x-text="msg.statusText"></span>
+                        </div>
+                    </template>
+
+                    <!-- Message Content -->
+                    <div class="message-content prose max-w-none prose-p:leading-relaxed prose-invert text-gray-200"
+                        :class="msg.role === 'user' ? 'prose-invert' : ''" x-html="msg.html"
+                        x-init="$watch('msg.isStreaming', val => { if(!val && msg.role === 'model') processPostRender($el, msg) })">
+                    </div>
+
+                    <!-- Timestamp -->
+                    <template x-if="msg.timestamp">
+                        <div class="text-[10px] text-gray-500 mt-2"
+                            :class="msg.role === 'user' ? 'text-right' : 'text-left'" x-text="msg.timestamp"></div>
+                    </template>
+
+                    <!-- Botones interactivos (solo bot finalizado) -->
+                    <template x-if="msg.role === 'model' && !msg.isStreaming">
+                        <div>
+                            <!-- Copiar -->
+                            <button @click="copyToClipboard(msg.text)"
+                                class="absolute top-2 right-2 p-1 rounded-full bg-white/10 hover:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-indigo-500"
+                                title="Copiar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                            <!-- Crear plantilla -->
+                            <button @click="createTemplateFromMsg(msg.text)"
+                                class="absolute top-2 right-10 p-1 rounded-full bg-white/10 hover:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400 hover:text-indigo-600"
+                                title="Crear plantilla">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </button>
+                            <!-- Descargar Word (.docx) -->
+                            <button @click="downloadDocFromMsg(msg, 'docx')"
+                                class="absolute top-2 right-[6rem] p-1 rounded-full bg-white/10 hover:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity text-cyan-400 hover:text-cyan-600"
+                                title="Descargar Word (.docx)">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </button>
+                            <!-- TTS -->
+                            <button @click="speakMsg(msg.text)"
+                                class="absolute top-2 right-[4.5rem] p-1 rounded-full bg-white/10 hover:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-indigo-500"
+                                title="Leer en voz alta">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <form @submit.prevent="submitForm" class="p-4 border-t border-white/5 bg-black/30 backdrop-blur-xl relative">
+
+            <!-- Formularios Rápidos de Creación y Contestación (Tutelas y Peticiones) -->
+            <div x-show="activeSkill && (activeSkill.id === 'contestador_tutelas' || activeSkill.id === 'entrevistador_pro')"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+                class="flex flex-wrap gap-2 px-2 pb-3 pt-1 justify-start items-center border-b border-white/5 mb-3"
+                style="display: none;">
+                <span
+                    class="text-[10px] font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5 select-none">
+                    <i class="bi bi-file-earmark-ruled-fill text-xs text-cyan-400"></i> Formularios Rápidos:
+                </span>
+                <button type="button" @click="openFieldsModal('plantilla_accion_de_tutela.md')"
+                    class="px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-300 hover:text-white text-[11px] font-bold rounded-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                    <i class="bi bi-file-earmark-text-fill"></i> Crear Tutela
+                </button>
+                <button type="button" @click="openFieldsModal('plantilla_contestacion_tutela.md')"
+                    class="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/25 text-blue-300 hover:text-white text-[11px] font-bold rounded-xl border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                    <i class="bi bi-shield-fill-check"></i> Contestar Tutela
+                </button>
+                <button type="button" @click="openFieldsModal('derecho_peticion_general.md')"
+                    class="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-300 hover:text-white text-[11px] font-bold rounded-xl border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                    <i class="bi bi-card-text"></i> Crear Petición
+                </button>
+                <button type="button" @click="openFieldsModal('plantilla_respuesta_peticion.md')"
+                    class="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/25 text-indigo-300 hover:text-white text-[11px] font-bold rounded-xl border border-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                    <i class="bi bi-reply-all-fill"></i> Responder Petición
+                </button>
+            </div>
+
+            <!-- Formularios Rápidos para Gestor de Liquidaciones -->
+            <div x-show="activeSkill && activeSkill.id === 'gestor_liquidaciones'"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+                class="flex flex-wrap gap-2 px-2 pb-3 pt-1 justify-start items-center border-b border-white/5 mb-3"
+                style="display: none;">
+                <span
+                    class="text-[10px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 select-none">
+                    <i class="bi bi-calculator-fill text-xs text-emerald-400"></i> Liquidaciones:
+                </span>
+                <button type="button" @click="openLiquidacionModal()"
+                    class="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-300 hover:text-white text-[11px] font-bold rounded-xl border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                    <i class="bi bi-file-earmark-spreadsheet-fill"></i> Iniciar Formulario de Liquidación
+                </button>
+            </div>
+
+            <!-- Chips de Archivos, Skills y Plantilla Detectada -->
+            <div class="flex flex-wrap gap-2 px-2 pb-2" x-show="currentAttachment || activeSkill || detectedTemplate">
+                <!-- Archivo -->
+                <template x-if="currentAttachment">
+                    <div
+                        class="inline-flex items-center bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full border border-indigo-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="max-w-[150px] truncate" :title="currentAttachment.name"
+                            x-text="currentAttachment.name"></span>
+                        <button type="button" @click="currentAttachment = null"
+                            class="ml-1 text-indigo-500 hover:text-indigo-700 focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Skill -->
+                <template x-if="activeSkill">
+                    <div
+                        class="inline-flex items-center bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-800 text-sm font-medium px-3 py-1.5 rounded-full border border-emerald-200 shadow-sm animate-fade-in-up">
+                        <span class="mr-2 animate-pulse text-emerald-500">🟢</span>
+                        <span class="font-bold mr-1" x-text="activeSkill.cmd"></span>
+                        <span class="max-w-[250px] truncate opacity-75" :title="activeSkill.desc"
+                            x-text="'- ' + activeSkill.desc"></span>
+                        <button type="button" @click="removeSkill"
+                            class="ml-2 bg-emerald-200 hover:bg-emerald-300 text-emerald-700 rounded-full p-0.5 focus:outline-none transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Chip de Plantilla Detectada en Prompt -->
+                <template x-if="detectedTemplate">
+                    <div
+                        class="inline-flex items-center bg-cyan-950/60 text-cyan-200 text-xs px-3 py-1.5 rounded-full border border-cyan-500/30 shadow-sm animate-fade-in-up transition-all duration-300 hover:bg-cyan-900/60">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5 text-cyan-400" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span>Plantilla: <span class="font-bold text-white truncate max-w-[120px]"
+                                :title="detectedTemplate" x-text="detectedTemplate"></span></span>
+                        <button type="button" @click="openFieldsModal(detectedTemplate)"
+                            class="ml-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold px-2.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm">
+                            📝 Rellenar Datos
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Slash Menu -->
+            <div id="slash-menu" x-show="slashMenu.visible" @click.away="slashMenu.visible = false"
+                style="display: none;">
+                <template x-if="filteredSlashCommands.length === 0">
+                    <div class="p-4 text-center text-slate-500 text-sm">No hay comandos.</div>
+                </template>
+                <template x-for="(cmd, index) in filteredSlashCommands" :key="cmd.id">
+                    <div class="slash-item" :class="{'active': index === slashMenu.activeIndex}"
+                        @click="executeSlashCommand(cmd)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2" x-html="cmd.icon"></svg>
+                        <span class="cmd" x-text="cmd.cmd"></span>
+                        <span class="desc" x-text="cmd.short_description || cmd.desc"></span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- At-Mention Menu -->
+            <div id="at-menu" x-show="atMenu.visible" @click.away="atMenu.visible = false" style="display: none;">
+                <template x-if="filteredAtMentions.length === 0">
+                    <div class="p-4 text-center text-slate-500 text-sm">No hay plantillas.</div>
+                </template>
+                <template x-for="(tpl, index) in filteredAtMentions" :key="tpl.name">
+                    <div class="at-item" :class="{'active': index === atMenu.activeIndex}"
+                        @click="selectAtMention(tpl)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="at-icon" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                        <span class="at-name" x-text="tpl.displayName"></span>
+                        <span class="at-ext" x-text="tpl.ext"></span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Sugerencia Proactiva de Llenado con Wizard -->
+            <div x-show="proactiveTemplateSuggestion" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                class="mx-2 mb-3 bg-gradient-to-r from-cyan-950/80 to-indigo-950/80 backdrop-blur-md border border-cyan-500/30 p-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-lg animate-fade-in-up text-left">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="p-2 bg-cyan-500/20 rounded-xl text-cyan-400 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-gray-300 font-semibold truncate">¿Quieres ayuda para redactar este
+                            documento?</p>
+                        <p class="text-[11px] text-cyan-300 truncate">Plantilla detectada: <span
+                                class="font-bold text-white" x-text="proactiveTemplateSuggestion.displayName"></span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto justify-end shrink-0">
+                    <button type="button" @click="proactiveTemplateSuggestion = null"
+                        class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl text-xs font-bold transition-all w-1/2 sm:w-auto text-center">
+                        Ignorar
+                    </button>
+                    <button type="button"
+                        @click="openFieldsModal(proactiveTemplateSuggestion.name); proactiveTemplateSuggestion = null"
+                        class="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-750 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all flex items-center justify-center gap-1 w-1/2 sm:w-auto">
+                        <span>📝 Asistente</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sugerencias Inteligentes -->
+            <div x-show="lastSuggestions.length > 0" class="flex flex-wrap gap-2 px-2 pb-4 pt-2 animate-fade-in-up">
+                <div class="flex items-center gap-2 w-full mb-1">
+                    <div class="h-px bg-gray-200 flex-1"></div>
+                    <span
+                        class="text-[10px] uppercase tracking-wider text-gray-400 font-bold whitespace-nowrap">Sugerencias
+                    </span>
+                    <button type="button" @click="lastSuggestions = []"
+                        class="text-gray-400 hover:text-gray-600 transition-colors" title="Cerrar sugerencias">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div class="h-px bg-gray-200 flex-1"></div>
+                </div>
+                <template x-for="suggestion in lastSuggestions" :key="suggestion">
+                    <button type="button" @click="selectSuggestion(suggestion)"
+                        class="suggestion-chip px-3 py-2 bg-gradient-to-r from-cyan-950/40 to-blue-950/40 hover:from-cyan-600 hover:to-blue-600 text-cyan-200 hover:text-white text-xs font-medium rounded-xl border border-cyan-500/20 hover:border-cyan-500/50 shadow-sm hover:shadow-md transition-all duration-300 active:scale-95 flex items-center gap-2 group">
+                        <div class="p-0.5 rounded-full bg-indigo-200 group-hover:bg-white/20 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-3 w-3 text-indigo-600 group-hover:text-white" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <span x-text="suggestion"></span>
+                    </button>
+                </template>
+            </div>
+
+            <div class="input-wrapper relative">
+                <input type="file" x-ref="fileInput" @change="handleFileUpload" class="hidden"
+                    accept=".pdf,.txt,.md,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                <input type="file" x-ref="ocrFileInput" @change="handleOcrUpload" class="hidden"
+                    accept=".png,.jpg,.jpeg,.webp,.pdf,image/png,image/jpeg,image/webp,application/pdf">
+
+                <!-- Menú Flotante de Adjuntos y Acciones -->
+                <div x-show="attachmentMenuOpen" @click.away="attachmentMenuOpen = false"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                    class="absolute bottom-full left-3 mb-3 bg-slate-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl z-50 flex flex-col gap-1 w-64"
+                    style="display: none;">
+                    <div
+                        class="px-3 py-2 border-b border-white/5 text-[10px] uppercase font-black text-indigo-400 tracking-wider flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Opciones y Adjuntos
+                    </div>
+                    <!-- Adjuntar archivo -->
+                    <button type="button" @click="$refs.fileInput.click(); attachmentMenuOpen = false"
+                        class="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-indigo-600/20 hover:border-indigo-500/25 border border-transparent rounded-xl transition-all w-full text-left group">
+                        <div
+                            class="p-1.5 bg-indigo-600/10 rounded-lg text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                        </div>
+                        <span>Adjuntar documento</span>
+                    </button>
+                    <!-- Iniciar Videollamada Jitsi -->
+                    <button type="button" @click="openMeetingModal(); attachmentMenuOpen = false"
+                        class="flex items-center gap-3 px-3 py-2 text-sm text-indigo-300 hover:text-white hover:bg-indigo-600/20 hover:border-indigo-500/25 border border-transparent rounded-xl transition-all w-full text-left group">
+                        <div
+                            class="p-1.5 bg-indigo-600/10 rounded-lg text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            <i class="bi bi-camera-video-fill text-sm"></i>
+                        </div>
+                        <span>Iniciar Videollamada</span>
+                    </button>
+                    <!-- Escanear con OCR (Imagen/PDF) -->
+                    <button type="button" @click="$refs.ocrFileInput.click(); attachmentMenuOpen = false"
+                        class="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-violet-600/20 hover:border-violet-500/25 border border-transparent rounded-xl transition-all w-full text-left group">
+                        <div
+                            class="p-1.5 bg-violet-600/10 rounded-lg text-violet-400 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <span>Escanear con OCR (Imagen/PDF)</span>
+                    </button>
+                    <!-- Exportar Chat -->
+                    <button type="button" @click="exportChat(); attachmentMenuOpen = false"
+                        class="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-emerald-600/20 hover:border-emerald-500/25 border border-transparent rounded-xl transition-all w-full text-left group">
+                        <div
+                            class="p-1.5 bg-emerald-600/10 rounded-lg text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </div>
+                        <span>Exportar conversación</span>
+                    </button>
+                    <!-- Limpiar Chat -->
+                    <button type="button" @click="clearChat(); attachmentMenuOpen = false"
+                        class="flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:text-white hover:bg-red-600/20 hover:border-red-500/25 border border-transparent rounded-xl transition-all w-full text-left group">
+                        <div
+                            class="p-1.5 bg-red-600/10 rounded-lg text-red-400 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <span>Limpiar conversación</span>
+                    </button>
+                </div>
+
+                <!-- Botón de Control (Clip) con Rotación -->
+                <button type="button" @click="attachmentMenuOpen = !attachmentMenuOpen" title="Adjuntos y acciones"
+                    class="absolute left-3 bottom-3 z-10 transition-colors"
+                    :class="attachmentMenuOpen ? 'text-indigo-400' : 'text-gray-500 hover:text-indigo-400'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform duration-200"
+                        :class="{'rotate-45': attachmentMenuOpen}" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                </button>
+
+                <button type="button" @click="openTemplateModal" title="Cargar plantilla"
+                    class="absolute left-12 bottom-3 text-gray-500 hover:text-indigo-600 z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                </button>
+
+                <textarea x-model="userInput" x-ref="textarea" @input="handleInput" @keydown="handleKeydown"
+                    :placeholder="activeSkill ? `Hablando con ${activeSkill.cmd}...` : 'Escribe tu pregunta legal...'"
+                    class="chat-input-textarea flex-1 w-full pl-20 pr-28 rounded-2xl outline-none" rows="1"
+                    required></textarea>
+
+                <!-- Indicador visual de onda de micrófono -->
+                <div x-show="isRecording" x-transition
+                    class="absolute right-28 bottom-3.5 flex items-center gap-[3px] bg-red-950/40 border border-red-500/25 px-2.5 py-0.5 rounded-full z-10">
+                    <span
+                        class="text-[8px] font-bold uppercase tracking-wider text-red-400 mr-1 select-none animate-pulse">Rec</span>
+                    <div class="flex items-end gap-[1.5px] h-3 w-5">
+                        <span class="w-[2.5px] bg-red-400 rounded-full animate-audio-bar-1"></span>
+                        <span class="w-[2.5px] bg-red-400 rounded-full animate-audio-bar-2"></span>
+                        <span class="w-[2.5px] bg-red-400 rounded-full animate-audio-bar-3"></span>
+                        <span class="w-[2.5px] bg-red-400 rounded-full animate-audio-bar-4"></span>
+                        <span class="w-[2.5px] bg-red-400 rounded-full animate-audio-bar-5"></span>
+                    </div>
+                </div>
+
+                <button type="button" @click="toggleMic" title="Dictar por voz"
+                    class="absolute right-16 bottom-3 z-10 transition-colors"
+                    :class="isRecording ? 'text-red-500' : 'text-gray-500 hover:text-indigo-600'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                </button>
+                <button type="submit"
+                    class="absolute right-3 bottom-2 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition duration-200 shadow-md active:scale-95 z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </div>
+
+            <div x-show="status.message" x-text="status.message" class="text-xs mt-2 transition-all font-medium"
+                :style="`color: ${status.color}`"></div>
+        </form>
+    </div>
+
+    <!-- Template Modal -->
+    <div x-show="isTemplateModalOpen" class="modal-backdrop" style="display: none;">
+        <div class="modal-content bg-white p-6 rounded-xl shadow-2xl w-90 max-w-md"
+            @click.away="isTemplateModalOpen = false">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Cargar Plantilla</h2>
+            <ul class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                <template x-for="tpl in templates" :key="tpl">
+                    <li>
+                        <button type="button" @click="loadTemplateContent(tpl)"
+                            class="w-full text-left p-3 rounded-lg hover:bg-indigo-50 transition-colors text-sm font-medium text-gray-700 border border-gray-100 hover:border-indigo-200"
+                            x-text="tpl"></button>
+                    </li>
+                </template>
+            </ul>
+            <button type="button" @click="isTemplateModalOpen = false"
+                class="mt-4 w-full p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold transition-colors">Cerrar</button>
+        </div>
+    </div>
+
+    {% include 'components/ia/rag_vault_modal.html' %}
+    {% include 'components/ia/colab_nube_modal.html' %}
+    {% include 'components/ia/certificate_modal.html' %}
+    {% include 'components/ia/meeting_modal.html' %}
+
+    <script src="/static/js/vault-controller.js"></script>
+
+    {% include 'components/ia/fields_modal.html' %}
+    {% include 'components/ia/diff_viewer_modal.html' %}
+    {% include 'components/ia/liquidacion_modal.html' %}
+    <script src="/static/js/diff-controller.js"></script>
+
+    <!-- MAIN ALPINE COMPONENT -->
+    <script src="/static/js/app-ia.js"></script>
+    <!-- Script para Modo Litigio Zen (Iframe Chat) -->
+    <script>
+        // Función para enviar mensaje al padre solicitando alternar el Modo Zen
+        function requestZenModeToggle() {
+            if (window.parent) {
+                window.parent.postMessage({ type: 'ZEN_MODE_REQUEST_TOGGLE' }, '*');
+            }
+        }
+
+        // Función local para sincronizar el estado visual del Modo Zen
+        function syncZenModeState(isActive) {
+            const body = document.body;
+            const icons = document.querySelectorAll('.zen-icon-chat');
+
+            if (isActive) {
+                body.classList.add('zen-active');
+                icons.forEach(icon => {
+                    icon.classList.replace('bi-eye-slash', 'bi-eye-fill');
+                    icon.classList.add('text-accent');
+                });
+            } else {
+                body.classList.remove('zen-active');
+                icons.forEach(icon => {
+                    icon.classList.replace('bi-eye-fill', 'bi-eye-slash');
+                    icon.classList.remove('text-accent');
+                });
+            }
+        }
+
+        // Escuchar mensajes provenientes del padre (base.html)
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'ZEN_MODE_TOGGLE') {
+                syncZenModeState(event.data.active);
+            }
+        });
+
+        // Al iniciar, verificar estado guardado
+        document.addEventListener('DOMContentLoaded', () => {
+            const zenActive = localStorage.getItem('zen-mode-active') === 'true';
+            syncZenModeState(zenActive);
+
+            // Registrar atajo de teclado Alt+Z dentro del iframe
+            window.addEventListener('keydown', (e) => {
+                if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
+                    e.preventDefault();
+                    requestZenModeToggle();
+                }
+            });
+
+            // --- Comunicación de Scroll y Foco del Chat para Ocultar/Mostrar el Dock en la ventana padre ---
+            const messagesContainer = document.getElementById('messages');
+            let lastScrollTopChat = 0;
+
+            if (messagesContainer && window.parent) {
+                messagesContainer.addEventListener('scroll', () => {
+                    let st = messagesContainer.scrollTop;
+                    if (st > lastScrollTopChat && st > 40) {
+                        // Scroll hacia abajo -> Ocultar dock en la ventana padre
+                        window.parent.postMessage({ type: 'PWA_DOCK_CONTROL', action: 'hide' }, '*');
+                    } else {
+                        // Scroll hacia arriba -> Mostrar dock en la ventana padre
+                        window.parent.postMessage({ type: 'PWA_DOCK_CONTROL', action: 'show' }, '*');
+                    }
+                    lastScrollTopChat = st <= 0 ? 0 : st;
+                }, { passive: true });
+            }
+
+            // Ocultar dock en el padre al enfocar el cuadro de texto del chat (para dar espacio al teclado móvil)
+            const chatTextarea = document.querySelector('.chat-input-textarea');
+            if (chatTextarea && window.parent) {
+                chatTextarea.addEventListener('focus', () => {
+                    window.parent.postMessage({ type: 'PWA_DOCK_CONTROL', action: 'hide' }, '*');
+                });
+                chatTextarea.addEventListener('blur', () => {
+                    // Esperar un breve instante para dar tiempo a otras interacciones
+                    setTimeout(() => {
+                        window.parent.postMessage({ type: 'PWA_DOCK_CONTROL', action: 'show' }, '*');
+                    }, 250);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+</html>

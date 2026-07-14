@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Confirmación de tu Asesoría Legal - Star-Doc</title>
+    <style>
+        /* Ajustes específicos para clientes de correo móviles */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .mobile-padding {
+                padding: 24px !important;
+            }
+            .mobile-stack {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .mobile-center {
+                text-align: center !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!--[if mso]>
+                <table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+                <tr>
+                <td>
+                <![endif]-->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" class="email-container" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
+                    
+                    <!-- HEADER -->
+                    <tr>
+                        <td align="center" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 40px 20px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Star-Doc</h1>
+                            <p style="margin: 6px 0 0; font-size: 14px; color: #38bdf8; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;">Innovación Legal a tu Alcance</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- CONTENT BODY -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 40px; background-color: #ffffff;">
+                            <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 700; color: #0f172a;">¡Hola, {{ name }}!</h2>
+                            
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Confirmamos que tu cita ha sido agendada de manera exitosa en nuestro sistema. Nuestro equipo legal ya ha recibido los detalles de tu caso y estamos preparados para asesorarte con el máximo rigor jurídico.
+                            </p>
+                            
+                            <!-- APPOINTMENT DETAILS CARD -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 600; color: #64748b; width: 30%; vertical-align: top;">Fecha:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 600; color: #0f172a; width: 70%;">{{ date }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 600; color: #64748b; width: 30%; vertical-align: top;">Hora:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 600; color: #0f172a; width: 70%;">{{ time }} (Hora Colombia)</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 600; color: #64748b; width: 30%; vertical-align: top;">Tipo:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; color: #334155; width: 70%;">{{ type }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; font-weight: 600; color: #64748b; width: 30%; vertical-align: top;">Motivo:</td>
+                                                <td style="font-size: 14px; color: #334155; width: 70%;">{{ reason }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            {% if meeting_link %}
+                            <!-- GOOGLE MEET SECTION -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #e2e8f0; padding-top: 24px; margin-top: 24px; text-align: center;">
+                                <tr>
+                                    <td align="center">
+                                        <img src="https://www.gstatic.com/images/branding/product/2x/meet_48dp.png" alt="Google Meet" width="48" height="48" style="display: block; margin-bottom: 12px; border: 0;">
+                                        <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 700; color: #0f172a;">Enlace de la Videollamada</h3>
+                                        
+                                        <!-- BUTTON -->
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                            <tr>
+                                                <td align="center" style="background-color: #2563eb; border-radius: 10px;">
+                                                    <a href="{{ meeting_link }}" target="_blank" style="display: inline-block; padding: 14px 30px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px; border: 1px solid #2563eb;">Unirse a Google Meet</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <p style="font-size: 12px; color: #64748b; margin-top: 14px; margin-bottom: 0;">
+                                            ¿No funciona el botón? <a href="{{ meeting_link }}" style="color: #2563eb; text-decoration: underline;">Copia este enlace directo</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            {% endif %}
+
+                            <p style="margin-top: 32px; margin-bottom: 0; font-size: 13px; color: #64748b; line-height: 1.5; text-align: center;">
+                                Para cancelar o reprogramar tu cita, por favor <a href="{{ base_url }}/api/appointments/cancel/{{ token }}" style="color: #ef4444; text-decoration: none; font-weight: 600;">haz clic aquí</a> con al menos 24 horas de antelación.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- FOOTER & LEGAL DISCLAIMER -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; line-height: 1.6; color: #94a3b8; text-align: justify;">
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center; font-weight: 600; font-size: 12px; color: #64748b;">
+                                &copy; 2026 Star-Doc Legal Tech. Medellín, Colombia.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center;">
+                                Este es un correo automático. Por favor no respondas a este remitente. Para soporte, escríbenos a <a href="mailto:starcontrac@gmail.com" style="color: #2563eb; text-decoration: none;">starcontrac@gmail.com</a>.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 8px;">
+                                <strong>CONFIDENCIALIDAD:</strong> De conformidad con el artículo 74 de la Constitución Política de Colombia y las normas del secreto profesional, la información contenida en este correo electrónico, incluyendo cualquier anexo, está dirigida únicamente a su destinatario y puede contener información privilegiada y confidencial. Si usted no es el destinatario indicado, le notificamos que cualquier divulgación, copia o distribución está estrictamente prohibida. Si ha recibido este correo por error, por favor notifíquelo de inmediato al remitente y elimínelo de su sistema.
+                            </p>
+                            <p style="margin: 0;">
+                                <strong>PROTECCIÓN DE DATOS PERSONALES (HABEAS DATA):</strong> En cumplimiento de la Ley 1581 de 2012 y el Decreto 1377 de 2013, le informamos que sus datos personales de contacto están incorporados en las bases de datos de Star-Doc con la exclusiva finalidad de gestionar la agenda de asesorías legales y la prestación de nuestros servicios. Usted puede ejercer sus derechos de acceso, consulta, rectificación, supresión y revocatoria de autorización de tratamiento escribiendo a <a href="mailto:starcontrac@gmail.com" style="color: #2563eb; text-decoration: none;">starcontrac@gmail.com</a>.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <!--[if mso]>
+                </td>
+                </tr>
+                </table>
+                <![endif]-->
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

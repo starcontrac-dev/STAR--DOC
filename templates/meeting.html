@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Negociación y Conciliación Segura - Star-Doc</title>
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración personalizada de Tailwind para mantener la consistencia estética
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <!-- API Externa de Jitsi Meet -->
+    <script src="https://{{ jitsi_domain }}/external_api.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #03050a;
+            /* Gradiente de fondo Premium (Neon Glow en las esquinas) */
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
+            overflow: hidden;
+        }
+
+        /* Estilo para simular desenfoque de fondo y borde brillante en los contenedores */
+        .glass-panel {
+            background: rgba(3, 5, 10, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar personalizado estético y scroll táctil */
+        .custom-scrollbar {
+            -webkit-overflow-scrolling: touch;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.25);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.45);
+        }
+    </style>
+</head>
+<body class="text-gray-100 flex flex-col h-screen h-[100dvh] overflow-hidden">
+
+    <!-- Header superior de la Sala (Completamente Adaptable para Móviles y PC) -->
+    <header class="bg-slate-950/75 backdrop-blur-xl border-b border-white/5 py-2 sm:py-3 px-3 sm:px-6 flex items-center justify-between gap-3 sm:gap-4 z-30">
+        
+        <!-- Logotipo y título: Se oculta en móviles pequeños (bajo sm/640px) para dar espacio al selector -->
+        <div class="hidden sm:flex items-center gap-3">
+            <div class="p-1.5 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-600/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Negociación Virtual</h1>
+                <p class="text-[9px] text-indigo-400 font-bold tracking-widest uppercase hidden md:block">STAR-DOC SOBERANO</p>
+            </div>
+        </div>
+
+        <!-- Selector de contrato y botón Salir: Ocupa todo el ancho en móviles para facilitar el toque -->
+        <div class="flex-1 sm:flex-none flex items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
+            <!-- Selector interactivo de documentos (Maximizado en móvil para comodidad táctil) -->
+            <div class="flex-1 sm:flex-none flex items-center gap-2">
+                <label for="pdf-selector" class="text-[11px] text-gray-400 font-semibold hidden md:inline">Contrato Activo:</label>
+                <select id="pdf-selector" class="w-full sm:w-auto bg-slate-900 border border-white/10 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer min-h-[38px] sm:min-h-0 flex-1">
+                    {% for file in output_files %}
+                        <option value="{{ file }}" {% if file == document_filename %}selected{% endif %}>{{ file }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Botón de Salir adaptado para pantalla táctil en móvil -->
+            <a href="/dashboard" class="px-3.5 py-2 sm:py-1.5 bg-white/5 hover:bg-white/10 text-xs font-semibold rounded-lg border border-white/10 transition-all text-gray-300 hover:text-white flex-shrink-0 min-h-[38px] sm:min-h-0 flex items-center justify-center">
+                Salir <span class="hidden sm:inline">&nbsp;de la Sala</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Workspace Splitter (Responsivo: Apilado en móvil y doble columna en PC) -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden p-2 md:p-4 gap-2 md:gap-4 relative z-10">
+        
+        <!-- Panel Izquierdo: Videollamada Jitsi Meet (Ocupa todo el espacio en móvil) -->
+        <div id="jitsi-panel" class="w-full md:w-1/2 flex flex-col glass-panel rounded-xl md:rounded-2xl overflow-hidden shadow-2xl relative transition-all duration-300 ease-in-out h-full">
+            <div class="px-4 py-2.5 bg-white/5 border-b border-white/5 flex items-center justify-between">
+                <span class="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                    Videollamada en Vivo
+                </span>
+                
+                <div class="flex items-center gap-2.5">
+                    <span class="text-[10px] text-gray-400 font-mono hidden sm:inline">ID: {{ room_name }}</span>
+                    
+                    <!-- Botón "Ver Contrato" para Móviles (Se reubicó en la barra del panel para NO tapar los botones inferiores de Jitsi Meet) -->
+                    <button id="btn-floating-pdf" class="md:hidden flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold rounded-lg border border-indigo-500 transition-all shadow-md shadow-indigo-600/10 cursor-pointer" title="Ver Contrato">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Ver Contrato
+                    </button>
+
+                    <!-- Botón de Maximización de la Videollamada -->
+                    <button id="btn-maximize-jitsi" class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/5" title="Maximizar videollamada">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+                     <!-- Contenedor del IFrame de Jitsi y alerta de red flotante -->
+            <div class="flex-1 bg-black/20 relative">
+                <div id="jitsi-meet-container" class="w-full h-full"></div>
+                <!-- Div Flotante para Alertas de Calidad de Red -->
+                <div id="net-quality-indicator" class="absolute top-4 left-4 z-20 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Visualizador de Contrato (Oculto en móvil por defecto, configurable a pantalla completa) -->
+        <div id="pdf-panel" class="hidden md:flex w-full md:w-1/2 flex-col glass-panel rounded-xl md:rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ease-in-out h-full">
+            <div class="px-4 py-2.5 bg-white/5 border-b border-white/5 flex items-center justify-between">
+                <span class="text-xs font-semibold text-gray-300 flex items-center gap-2 truncate">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="truncate">Visor de Documentos LegalTech</span>
+                </span>
+                
+                <div class="flex items-center gap-3">
+                    <span id="pdf-name-display" class="text-[10px] text-gray-400 font-mono hidden lg:inline truncate max-w-[150px]">{{ document_filename }}</span>
+                    
+                    <!-- Botón de Cerrar (Visible solo cuando el panel está maximizado o en móvil) -->
+                    <button id="btn-close-pdf" class="hidden text-gray-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-white/5" title="Volver a videollamada">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    
+                    <!-- Botón de Maximización del Documento -->
+                    <button id="btn-maximize-pdf" class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/5" title="Maximizar documento">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de Herramientas Legales del Contrato (Dictado, Firma, Redacción de Acta) -->
+            <div class="px-4 py-2.5 bg-slate-950/50 border-b border-white/5 flex items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                    <!-- Botón de Grabación de Audio -->
+                    <button id="btn-toggle-mic" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-gray-300 hover:text-white transition-all flex items-center gap-2 font-semibold min-h-[32px] cursor-pointer">
+                        <span id="mic-indicator" class="w-2 h-2 rounded-full bg-gray-500"></span>
+                        <span id="mic-text">Iniciar Grabación</span>
+                    </button>
+                    <!-- Indicador visual de grabación en caliente -->
+                    <span id="live-transcription-status" class="text-[10px] text-red-400 italic hidden max-w-[150px] truncate">Grabando audio...</span>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <!-- Botón Generar Acta IA -->
+                    <button id="btn-generate-acta" class="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 rounded-lg transition-all flex items-center gap-1.5 font-bold min-h-[32px] cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" />
+                        </svg>
+                        Redactar Acta IA
+                    </button>
+                    <!-- Botón Firmar Documento -->
+                    <button id="btn-sign-pdf" class="px-3 py-1.5 bg-green-600/20 hover:bg-green-600/30 text-green-300 hover:text-green-200 border border-green-500/20 rounded-lg transition-all flex items-center gap-1.5 font-bold min-h-[32px] cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                        Firmar Contrato
+                    </button>
+                </div>
+            </div>
+
+            <!-- Previsualizador Interactivo IFrame -->
+            <div class="flex-1 bg-slate-900/60 relative">
+                <iframe id="pdf-viewer-iframe" src="/output/{{ document_filename }}" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Premium de Firma Caligráfica -->
+    <div id="signature-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 items-center justify-center p-2 sm:p-4">
+        <div class="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden glass-panel flex flex-col max-h-[92dvh] sm:max-h-[90dvh]">
+            <!-- Encabezado -->
+            <div class="px-5 sm:px-6 py-3.5 bg-white/5 border-b border-white/5 flex items-center justify-between flex-shrink-0">
+                <h3 class="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Consentimiento y Firma Biométrica</h3>
+                <button id="btn-close-sig-modal" class="text-gray-400 hover:text-white transition-colors p-1 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Contenido scrollable -->
+            <div class="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+                <!-- Checkboxes de Consentimiento Legal en Sala -->
+                <div class="space-y-2 bg-slate-950/45 p-3.5 rounded-xl border border-white/5 text-[11px]">
+                    <label class="flex items-start gap-2.5 cursor-pointer group">
+                        <input type="checkbox" id="consent-check" class="mt-0.5 accent-indigo-600 rounded cursor-pointer">
+                        <span class="leading-relaxed text-gray-400 group-hover:text-gray-200 transition-colors">
+                            Acepto firmar electrónicamente de conformidad con la <strong>Ley 527 de 1999</strong> y su <strong>Decreto 2364 de 2012</strong>.
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-2.5 cursor-pointer group">
+                        <input type="checkbox" id="biometrics-check" class="mt-0.5 accent-indigo-600 rounded cursor-pointer">
+                        <span class="leading-relaxed text-gray-400 group-hover:text-gray-200 transition-colors">
+                            Autorizo el registro de mis metadatos biométricos y técnicos (Dirección IP, marca de tiempo y agente de navegación) para garantizar la inmutabilidad y la cadena de custodia en IPFS.
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Panel de Video-Grabación en Sala -->
+                <div id="video-record-panel" class="hidden flex flex-col space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                            Video-Consentimiento
+                        </h4>
+                        <span id="recording-timer" class="text-[10px] text-red-500 font-semibold hidden bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">12s</span>
+                    </div>
+                    <div class="bg-indigo-950/30 border border-indigo-500/10 p-2.5 rounded-lg text-[10px] leading-relaxed text-indigo-300 font-medium italic">
+                        <span class="text-[8px] text-indigo-400 font-bold uppercase tracking-wider block mb-0.5">Lea esto en voz alta:</span>
+                        <span id="declaration-to-read">"Yo, {{ signer_name }}, acepto voluntariamente los términos y condiciones. Firmo de forma electrónica y consciente de sus efectos legales."</span>
+                    </div>
+                    <div class="bg-black/50 border border-white/5 rounded-lg overflow-hidden aspect-video relative max-h-[140px] flex items-center justify-center">
+                        <video id="webcam-preview" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                        <div id="recording-overlay" class="absolute inset-0 bg-red-600/10 border-2 border-red-500 flex items-center justify-center hidden pointer-events-none">
+                            <span class="bg-red-600 text-white text-[8px] font-extrabold uppercase px-2 py-0.5 rounded shadow-lg tracking-widest animate-pulse">GRABANDO</span>
+                        </div>
+                    </div>
+                    <button type="button" id="start-record-btn" class="w-full py-1.5 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white text-[10px] font-bold rounded-lg shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                        Iniciar Grabación (12s)
+                    </button>
+                </div>
+                
+                <div class="relative w-full bg-slate-950 rounded-xl border border-white/15 overflow-hidden" style="height: 150px; min-height: 150px;">
+                    <canvas id="meet-sig-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+                    <div id="canvas-overlay" class="absolute inset-0 bg-[#0e101d]/95 flex flex-col items-center justify-center p-4 text-center select-none pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span id="overlay-text" class="text-[10px] text-gray-400 font-medium leading-normal">Marque las casillas de consentimiento legal de arriba para habilitar el lienzo de firma.</span>
+                    </div>
+                </div>
+                
+                <!-- Selector de Color de Tinta -->
+                <div class="flex items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-400">Tinta:</span>
+                        <button class="meet-ink-btn w-6 h-6 rounded-full bg-blue-600 focus:outline-none ring-2 ring-white/10 cursor-pointer" data-color="#2563eb"></button>
+                        <button class="meet-ink-btn w-6 h-6 rounded-full bg-indigo-500 focus:outline-none ring-2 ring-white/10 cursor-pointer" data-color="#6366f1"></button>
+                        <button class="meet-ink-btn w-6 h-6 rounded-full bg-slate-900 border border-white/20 focus:outline-none ring-2 ring-white/10 cursor-pointer" data-color="#0f172a"></button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-clear-meet-sig" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-semibold rounded-lg transition-all text-gray-300 cursor-pointer">
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mensaje de resultado de firmas en sala -->
+                <div id="meet-result-message" class="text-[11px] text-center font-semibold mt-1"></div>
+            </div>
+            
+            <!-- Acciones -->
+            <div class="px-6 py-4 bg-white/5 border-t border-white/5 flex justify-end gap-3 flex-shrink-0">
+                <button id="btn-cancel-meet-sig" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold rounded-xl text-gray-300 transition-all cursor-pointer">
+                    Cancelar
+                </button>
+                <button id="btn-confirm-meet-sig" disabled class="px-4 py-2 bg-indigo-600/40 text-gray-400 border border-white/5 text-xs font-bold rounded-xl transition-all cursor-not-allowed">
+                    Confirmar y Estampar Firma
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Premium para Redacción de Acta con Fallback Manual -->
+    <div id="acta-manual-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 items-center justify-center p-2 sm:p-4">
+        <div class="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden glass-panel flex flex-col max-h-[90dvh]">
+            <!-- Encabezado -->
+            <div class="px-5 sm:px-6 py-4 bg-white/5 border-b border-white/5 flex items-center justify-between flex-shrink-0">
+                <h3 class="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Estructurar Acta con IA (Resumen Manual)
+                </h3>
+                <button id="btn-close-acta-modal" class="text-gray-400 hover:text-white transition-colors p-1 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="p-5 flex flex-col gap-4 overflow-y-auto custom-scrollbar flex-1 min-h-0 text-xs sm:text-sm">
+                <div class="bg-indigo-950/20 border border-indigo-500/10 p-4 rounded-xl text-indigo-300 leading-relaxed text-xs">
+                    <p class="font-semibold mb-1">Nota del Sistema Star-Doc:</p>
+                    No se ha detectado ninguna transcripción de audio en vivo en Redis. Esto puede deberse a que el micrófono está siendo usado de forma exclusiva por la videollamada de Jitsi. 
+                    <br><br>
+                    Para que la inteligencia artificial (Gemini) estructure el acta formal con todas las solemnidades colombianas, escriba a continuación un breve resumen de los acuerdos, partes implicadas y plazos definidos:
+                </div>
+                
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Acuerdos y notas de la reunión</label>
+                    <textarea id="acta-manual-text" rows="8" class="w-full p-3 bg-slate-950 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 text-white font-sans text-xs leading-relaxed" 
+                              placeholder="Ej: Las partes (Juan Pérez y María Gómez) concilian fijar una cuota de alimentos de $500.000 COP mensuales. El primer pago se efectuará el 5 de agosto de 2026. Adicionalmente, se acuerda el régimen de visitas los fines de semana de forma alterna..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Acciones -->
+            <div class="px-6 py-4 bg-white/5 border-t border-white/5 flex justify-end gap-3 flex-shrink-0">
+                <button id="btn-cancel-acta-modal" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold rounded-xl text-gray-300 transition-all cursor-pointer">
+                    Cancelar
+                </button>
+                <button id="btn-submit-acta-manual" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-600/20 cursor-pointer">
+                    Redactar Acta con IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Inicialización de Variables y Carga de Controlador Externo -->
+    <script>
+        window.ROOM_NAME = "{{ room_name }}";
+        window.JITSI_DOMAIN = "{{ jitsi_domain }}";
+        window.DOCUMENT_FILENAME = "{{ document_filename }}";
+        window.SIGNER_NAME = "{% if current_user %}{{ current_user.full_name or current_user.username }}{% elif appointment %}{{ appointment.lead_name }}{% else %}Invitado{% endif %}";
+        window.SIGNER_EMAIL = "{% if current_user %}{{ current_user.email }}{% elif appointment %}{{ appointment.lead_email }}{% else %}{% endif %}";
+        window.SIGNER_TOKEN = "{{ signer_token or '' }}";
+        window.currentUserUsername = "{% if current_user %}{{ current_user.username }}{% else %}Invitado{% endif %}";
+    </script>
+    <script src="/static/js/meeting-controller.js?v=2.0.6"></script>
+</body>
+</html>

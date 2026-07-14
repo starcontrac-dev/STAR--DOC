@@ -1,0 +1,80 @@
+{
+  "variables": {
+    "requiere_codeudor": {
+      "type": "select",
+      "label": "¿El contrato requiere un Codeudor/Fiador Solidario?",
+      "options": ["Sí", "No"]
+    },
+    "nombre_codeudor": {
+      "type": "text",
+      "label": "Nombre del Codeudor",
+      "placeholder": "Nombre completo del fiador solidario",
+      "depends_on": {
+        "variable": "requiere_codeudor",
+        "equals": "Sí"
+      }
+    },
+    "cedula_codeudor": {
+      "type": "text",
+      "label": "Cédula del Codeudor",
+      "placeholder": "Número de identificación del codeudor",
+      "depends_on": {
+        "variable": "requiere_codeudor",
+        "equals": "Sí"
+      }
+    },
+    "ciudad_codeudor": {
+      "type": "text",
+      "label": "Ciudad del Codeudor",
+      "placeholder": "Ciudad de residencia del codeudor",
+      "depends_on": {
+        "variable": "requiere_codeudor",
+        "equals": "Sí"
+      }
+    },
+    "lugarexp_cedula_codeudor": {
+      "type": "text",
+      "label": "Lugar de expedición de la cédula del Codeudor",
+      "placeholder": "Ciudad de expedición de la cédula",
+      "depends_on": {
+        "variable": "requiere_codeudor",
+        "equals": "Sí"
+      }
+    },
+    "email_codeudor": {
+      "type": "email",
+      "label": "Correo electrónico del Codeudor",
+      "placeholder": "ejemplo@codeudor.com",
+      "depends_on": {
+        "variable": "requiere_codeudor",
+        "equals": "Sí"
+      }
+    },
+    "canon_mensual_numeros": {
+      "type": "number",
+      "label": "Valor del canon mensual en números ($)"
+    },
+    "vigencia_meses": {
+      "type": "number",
+      "label": "Vigencia del contrato (Meses)"
+    },
+    "fecha_inicio": {
+      "type": "date",
+      "label": "Fecha de inicio del arrendamiento"
+    },
+    "fecha_fin": {
+      "type": "date",
+      "label": "Fecha de terminación del arrendamiento"
+    },
+    "email_arrendador": {
+      "type": "email",
+      "label": "Correo de notificaciones del Arrendador",
+      "placeholder": "arrendador@email.com"
+    },
+    "email_arrendatario": {
+      "type": "email",
+      "label": "Correo de notificaciones del Arrendatario",
+      "placeholder": "arrendatario@email.com"
+    }
+  }
+}

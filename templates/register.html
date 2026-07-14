@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - Star-Doc{% endblock %}
+{% set hide_sidebar = True %}
+
+{% block background_media %}
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <video autoplay muted loop playsinline class="absolute min-w-full min-h-full object-cover opacity-40">
+        <source src="/static/starcontract.mp4" type="video/mp4">
+    </video>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-60"></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh]">
+    <div class="card w-full max-w-lg glass-panel shadow-2xl">
+        <div class="card-body p-8">
+            <div class="text-center mb-6">
+                <div class="mb-4 flex flex-col items-center">
+                    <a href="/" class="transition-transform duration-300 hover:scale-110">
+                        <img src="/static/favicon.ico" alt="StarContract Logo"
+                            class="w-14 h-14 drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]">
+                    </a>
+                </div>
+                <h2 class="text-2xl font-bold font-mono tracking-tight text-white">Crear Nueva Cuenta</h2>
+                <p class="text-base-content/60 mt-1">Únete a Star-Doc hoy</p>
+            </div>
+
+            <form id="register-form" class="flex flex-col gap-3">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Nombre de Usuario</span></label>
+                    <input type="text" name="username" placeholder="jdoe"
+                        class="input input-bordered bg-black/20 focus:border-secondary" required />
+                </div>
+
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Email</span></label>
+                    <input type="email" name="email" placeholder="john@example.com"
+                        class="input input-bordered bg-black/20 focus:border-secondary" required />
+                </div>
+
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Nombre Completo</span></label>
+                    <input type="text" name="full_name" placeholder="John Doe"
+                        class="input input-bordered bg-black/20 focus:border-secondary" required />
+                </div>
+
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Contraseña</span></label>
+                    <input type="password" name="password" placeholder="••••••••"
+                        class="input input-bordered bg-black/20 focus:border-secondary" required />
+                </div>
+
+                <div id="message-container"></div>
+
+                <div class="form-control mt-6">
+                    <button type="submit"
+                        class="btn btn-secondary bg-gradient-to-r from-secondary to-purple-600 border-none text-white hover:shadow-lg hover:shadow-secondary/30">
+                        Registrarse
+                    </button>
+                </div>
+            </form>
+
+            <div class="divider opacity-20 text-sm text-base-content/60">O regístrate con</div>
+
+            <!-- Botón de Google Sign-Up -->
+            <a href="/auth/google/login/start" 
+               class="btn btn-outline btn-block border-white/20 hover:bg-white/10 hover:border-white/40 text-base-content group flex items-center justify-center gap-3 transition-all mb-3 bg-[#0f1014]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span class="font-medium">Continuar con Google</span>
+            </a>
+
+            <div class="text-center mt-6">
+                <p class="text-sm text-base-content/60">¿Ya tienes cuenta? <a href="/"
+                        class="link link-secondary no-underline hover:underline">Inicia sesión</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Check for auth errors (e.g. from Google OAuth)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error')) {
+        const errorMsg = urlParams.get('error') === 'google_auth_failed' 
+            ? 'Error al registrarse con Google. Por favor, intenta de nuevo.' 
+            : 'Ocurrió un error en la autenticación.';
+        setTimeout(() => showToast(errorMsg, 'error'), 500);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const messageContainer = document.getElementById('message-container');
+        const form = e.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        messageContainer.innerHTML = '';
+
+        try {
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showToast(result.message, 'success');
+                setTimeout(() => { window.location.href = '/'; }, 2000);
+            } else {
+                const err = new Error('Error en el registro');
+                err.details = result.detail;
+                throw err;
+            }
+        } catch (error) {
+            let errorMsg = error.message;
+            if (error.details && Array.isArray(error.details)) {
+                errorMsg = error.details.map(d => d.msg).join('<br>');
+            }
+            messageContainer.innerHTML = `
+                <div role="alert" class="alert alert-error text-sm py-2 mt-2 bg-error/10 text-error border-error/20">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>${errorMsg}</span>
+                </div>`;
+        }
+    });
+</script>
+{% endblock %}

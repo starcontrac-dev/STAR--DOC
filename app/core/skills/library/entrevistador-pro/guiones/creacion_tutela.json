@@ -1,0 +1,33 @@
+{
+  "fases": [
+    {
+      "nombre": "Fase 1: Identificación y Representación",
+      "preguntas": [
+        "1. ¿Cuál es tu nombre completo, número de cédula y lugar de expedición?",
+        "2. ¿La tutela la presentas en nombre propio o estás actuando en representación de un menor de edad o de alguien en situación de indefensión?"
+      ]
+    },
+    {
+      "nombre": "Fase 2: Hechos y Temporalidad",
+      "preguntas": [
+        "1. ¿Qué hechos o situaciones ocurrieron? Por favor, nárralos en orden cronológico.",
+        "2. ¿En qué fecha ocurrió el hecho principal o la última afectación? (Esto es clave para verificar el requisito de inmediatez)."
+      ]
+    },
+    {
+      "nombre": "Fase 3: Derechos Afectados y Pretensiones",
+      "preguntas": [
+        "1. ¿Qué derecho fundamental consideras que se te está vulnerando? (ej. Salud, Petición, Trabajo, Mínimo Vital, Debido Proceso).",
+        "2. ¿Qué le solicitas concretamente ordenar al Juez de Tutela que haga el accionado? (Pretensiones concretas)."
+      ]
+    },
+    {
+      "nombre": "Fase 4: Pruebas y Notificaciones",
+      "preguntas": [
+        "1. ¿Qué pruebas tienes para sustentar los hechos? (ej: copias de peticiones anteriores, órdenes médicas, historias clínicas, cartas de despido).",
+        "2. ¿Cuál es tu dirección de residencia física, correo electrónico y teléfono para recibir notificaciones?"
+      ]
+    }
+  ],
+  "consejo_IA": "Pregunta un máximo de 2 a 3 preguntas por turno. Explica amablemente el porqué de cada dato."
+}

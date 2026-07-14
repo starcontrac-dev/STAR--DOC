@@ -1,0 +1,1838 @@
+{% extends "base.html" %}
+
+{% block title %}Star-Doc - La Suite Legal con IA{% endblock %}
+
+{% block styles %}
+<style>
+    /* ══════════════════════════════════════════════════ */
+    /* STAR-DOC LANDING - ESTILOS PREMIUM 2026           */
+    /* ══════════════════════════════════════════════════ */
+
+    /* Efecto de aurora para el fondo */
+    .aurora-bg {
+        background:
+            radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.2) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.2) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.2) 0px, transparent 50%),
+            radial-gradient(at 0% 100%, rgba(168, 85, 247, 0.2) 0px, transparent 50%);
+        animation: pulse-aurora 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse-aurora {
+        0% {
+            opacity: 0.1;
+            transform: scale(1);
+        }
+
+        100% {
+            opacity: 0.2;
+            transform: scale(1.05);
+        }
+    }
+
+    /* ── Navbar Scroll-Aware ── */
+    #main-navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, padding 0.3s ease;
+        padding: 1rem 0;
+    }
+
+    #main-navbar.scrolled {
+        background: rgba(2, 6, 23, 0.85);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        padding: 0.5rem 0;
+        backdrop-filter: blur(18px);
+    }
+
+    #main-navbar.scrolled .nav-sticky-cta {
+        display: flex !important;
+    }
+
+    /* Tarjetas Holograficas */
+    .holo-card {
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .holo-card:hover {
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(6, 182, 212, 0.4);
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px -10px rgba(6, 182, 212, 0.2);
+    }
+
+    /* ── Bento Grid (Features) ── */
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto;
+        gap: 1.25rem;
+    }
+
+    .bento-item-hero {
+        grid-column: span 2;
+        grid-row: span 2;
+    }
+
+    .bento-item-tall {
+        grid-row: span 2;
+    }
+
+    @media (max-width: 1024px) {
+        .bento-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .bento-item-hero {
+            grid-column: span 2;
+            grid-row: span 1;
+        }
+
+        .bento-item-tall {
+            grid-row: span 1;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .bento-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .bento-item-hero,
+        .bento-item-tall {
+            grid-column: span 1;
+            grid-row: span 1;
+        }
+    }
+
+    /* Gradientes de texto */
+    .text-gradient-cyan {
+        background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .text-gradient-purple {
+        background: linear-gradient(135deg, #c084fc 0%, #db2777 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .text-gradient-gold {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* ── Scroll Reveal ── */
+    .sr {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .sr.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .sr-left {
+        opacity: 0;
+        transform: translateX(-40px);
+        transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .sr-left.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .sr-right {
+        opacity: 0;
+        transform: translateX(40px);
+        transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .sr-right.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* ── Partículas Flotantes CSS ── */
+    .particles {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(6, 182, 212, 0.4);
+        animation: float-particle linear infinite;
+        will-change: transform;
+    }
+
+    @keyframes float-particle {
+        0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 1;
+        }
+
+        90% {
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateY(-10vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+
+    /* ── Marquee Ticker ── */
+    .marquee-fixed-bottom {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 90;
+        background: rgba(2, 6, 23, 0.75);
+        /* Fondo oscuro con transparencia y blur */
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+        padding: 0.4rem 0;
+        /* Más compacto verticalmente para no obstaculizar la UX */
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Degradados de desvanecimiento (Fade mask) a los lados */
+    .marquee-fixed-bottom::before,
+    .marquee-fixed-bottom::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        width: 80px;
+        height: 100%;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    .marquee-fixed-bottom::before {
+        left: 0;
+        background: linear-gradient(to right, rgba(2, 6, 23, 0.95), transparent);
+    }
+
+    .marquee-fixed-bottom::after {
+        right: 0;
+        background: linear-gradient(to left, rgba(2, 6, 23, 0.95), transparent);
+    }
+
+    .marquee-track {
+        display: flex;
+        align-items: center;
+        width: max-content;
+        animation: marquee-scroll 45s linear infinite;
+        /* Animación fluida y elegante */
+    }
+
+    .marquee-track:hover {
+        animation-play-state: paused;
+    }
+
+    .marquee-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-right: 2rem;
+        /* Espaciado perfecto y sin saltos en el loop infinito */
+        padding: 0.45rem 1.1rem;
+        /* Compactación perfecta para el fixed bottom */
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 9999px;
+        /* Formato cápsula premium */
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.825rem;
+        /* Fuente optimizada para navbar inferior */
+        font-weight: 500;
+        white-space: nowrap;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .marquee-item i {
+        font-size: 1.05rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+        background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .marquee-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(6, 182, 212, 0.4);
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.15), inset 0 0 10px rgba(6, 182, 212, 0.05);
+    }
+
+    .marquee-item:hover i {
+        transform: scale(1.2) rotate(8deg);
+        background: linear-gradient(135deg, #c084fc 0%, #db2777 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    @keyframes marquee-scroll {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    /* ── Testimonios Carousel ── */
+    .testimonial-slide {
+        display: none;
+    }
+
+    .testimonial-slide.active {
+        display: block;
+        animation: fadeSlide .5s ease forwards;
+    }
+
+    @keyframes fadeSlide {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* ── FAQ Accordion mejorado ── */
+    .faq-item summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .faq-item[open] summary .faq-icon {
+        transform: rotate(45deg);
+        color: #22d3ee;
+    }
+
+    .faq-icon {
+        transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .faq-item[open] {
+        border-color: rgba(6, 182, 212, 0.3) !important;
+        background: rgba(6, 182, 212, 0.04);
+    }
+
+    /* ── Pricing Cards ── */
+    .pricing-card {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(14px);
+        border-radius: 1.5rem;
+        transition: all 0.35s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pricing-card.featured {
+        border-color: rgba(6, 182, 212, 0.5);
+        background: rgba(6, 182, 212, 0.06);
+        box-shadow: 0 0 60px -10px rgba(6, 182, 212, 0.2), inset 0 0 40px rgba(6, 182, 212, 0.04);
+    }
+
+    .pricing-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .pricing-card.featured:hover {
+        box-shadow: 0 24px 48px rgba(6, 182, 212, 0.2);
+    }
+
+    .pricing-popular-badge {
+        position: absolute;
+        top: 1.5rem;
+        right: -2.2rem;
+        background: linear-gradient(90deg, #22d3ee, #3b82f6);
+        color: #000;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 0.2rem 3rem;
+        transform: rotate(45deg);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    /* ── Trusted By ── */
+    .trust-logo {
+        opacity: 0.35;
+        filter: grayscale(1) brightness(2);
+        transition: opacity 0.3s ease, filter 0.3s ease;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.6rem 1.2rem;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .trust-logo:hover {
+        opacity: 0.7;
+        filter: grayscale(0) brightness(1.4);
+    }
+
+    /* ── Línea de progreso animada ── */
+    .progress-line {
+        transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        width: 0;
+    }
+
+    .progress-line.visible {
+        width: 100%;
+    }
+
+    /* ── Step circles pulsantes ── */
+    .step-circle {
+        transition: all 0.5s ease;
+    }
+
+    .step-circle.active {
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+        border-color: rgba(6, 182, 212, 0.5) !important;
+    }
+
+    /* ── Mouse Glow en Cards ── */
+    .holo-card {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .holo-card .glow-spot {
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.85);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .holo-card:hover .glow-spot {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* ── Typed Cursor ── */
+    .typed-cursor {
+        display: inline-block;
+        width: 3px;
+        height: 1em;
+        background: #22d3ee;
+        margin-left: 4px;
+        vertical-align: text-bottom;
+        animation: blink-cursor 0.8s step-end infinite;
+    }
+
+    @keyframes blink-cursor {
+
+        0%,
+        100% {
+            opacity: 1
+        }
+
+        50% {
+            opacity: 0
+        }
+    }
+
+    /* ══════════════════════════════════════════════════ */
+    /* RESPONSIVE MÓVIL - MEJORAS 2026                   */
+    /* ══════════════════════════════════════════════════ */
+
+    /* ── Hero: compensar navbar fijo ── */
+    .hero {
+        padding-top: 5rem;
+    }
+
+    /* ── Holo cards: desactivar hover transform en touch ── */
+    @media (hover: none) {
+        .holo-card:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    }
+
+    /* ── Responsividad pantallas pequeñas ── */
+    @media (max-width: 640px) {
+
+        /* Hero ajustes */
+        .hero {
+            min-height: 75vh;
+            padding-top: 4.5rem;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            line-height: 1.2;
+        }
+
+        .hero .badge {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.65rem;
+        }
+
+        /* Métricas en columna vertical */
+        #metrics-section .grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        #metrics-section .holo-card {
+            padding: 1rem;
+        }
+
+        #metrics-section [data-counter] {
+            font-size: 1.75rem;
+        }
+
+        /* Use Cases: tabs más compactos */
+        #case-tabs {
+            gap: 0.5rem;
+        }
+
+        #case-tabs button {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            min-height: auto;
+            height: auto;
+        }
+
+        /* Testimonios: padding reducido */
+        .testimonial-slide {
+            padding: 1.25rem;
+        }
+
+        /* How it works: steps en 2 columnas */
+        section .grid.grid-cols-1.md\:grid-cols-4 {
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        section .grid.grid-cols-1.md\:grid-cols-4 .w-24 {
+            width: 4rem;
+            height: 4rem;
+        }
+
+        section .grid.grid-cols-1.md\:grid-cols-4 .w-24 i {
+            font-size: 1.5rem;
+        }
+
+        section .grid.grid-cols-1.md\:grid-cols-4 h3 {
+            font-size: 0.9rem;
+        }
+
+        section .grid.grid-cols-1.md\:grid-cols-4 p {
+            font-size: 0.75rem;
+        }
+
+        /* Trust logos: scroll horizontal */
+        .trust-logo {
+            font-size: 0.7rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        /* Secciones: reducir padding vertical */
+        section {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+
+        section h2 {
+            font-size: 1.5rem;
+        }
+
+        /* CTA Final */
+        .holo-card.p-12 {
+            padding: 2rem 1.25rem;
+        }
+
+        /* Footer */
+        footer .grid {
+            gap: 1.5rem;
+        }
+    }
+
+    /* ── Tablet (641-1024px) ── */
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .hero {
+            padding-top: 5rem;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+        }
+    }
+
+    /* ── iframe de YouTube responsive ── */
+    .hero iframe {
+        max-height: 400px;
+    }
+
+    @media (max-width: 640px) {
+        .hero iframe {
+            max-height: 220px;
+        }
+
+        .hero .mt-16 {
+            margin-top: 2rem;
+        }
+    }
+
+    /* ── Use cases mobile: sección de demo card menos rotada ── */
+    @media (max-width: 768px) {
+        .case-content .holo-card {
+            transform: none !important;
+        }
+
+        .case-content h3 {
+            font-size: 1.4rem;
+        }
+
+        .case-content p {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen relative overflow-hidden font-sans selection:bg-accent selection:text-white pb-20">
+
+    <!-- Background Animado -->
+    <!-- Background Animado (Aurora) -->
+    <div class="fixed inset-0 aurora-bg -z-10"></div>
+
+    <!-- Background Video -->
+    <video id="bg-video" autoplay muted playsinline class="fixed inset-0 w-full h-full object-cover -z-20 opacity-40">
+        <source src="/static/starcontract.mp4" type="video/mp4">
+    </video>
+
+    <!-- Partículas Flotantes CSS-only -->
+    <div class="particles">
+        <div class="particle" style="left:5%;width:3px;height:3px;animation-duration:18s;animation-delay:0s;"></div>
+        <div class="particle"
+            style="left:15%;width:2px;height:2px;animation-duration:22s;animation-delay:3s;background:rgba(139,92,246,0.3);">
+        </div>
+        <div class="particle" style="left:25%;width:4px;height:4px;animation-duration:15s;animation-delay:1s;"></div>
+        <div class="particle"
+            style="left:35%;width:2px;height:2px;animation-duration:25s;animation-delay:5s;background:rgba(59,130,246,0.3);">
+        </div>
+        <div class="particle" style="left:45%;width:3px;height:3px;animation-duration:20s;animation-delay:2s;"></div>
+        <div class="particle"
+            style="left:55%;width:2px;height:2px;animation-duration:28s;animation-delay:7s;background:rgba(168,85,247,0.3);">
+        </div>
+        <div class="particle" style="left:65%;width:4px;height:4px;animation-duration:16s;animation-delay:4s;"></div>
+        <div class="particle"
+            style="left:75%;width:2px;height:2px;animation-duration:23s;animation-delay:6s;background:rgba(6,182,212,0.3);">
+        </div>
+        <div class="particle" style="left:85%;width:3px;height:3px;animation-duration:19s;animation-delay:1s;"></div>
+        <div class="particle"
+            style="left:92%;width:2px;height:2px;animation-duration:26s;animation-delay:8s;background:rgba(139,92,246,0.3);">
+        </div>
+    </div>
+
+    <!-- Sound Control -->
+    <button id="sound-toggle"
+        class="fixed bottom-4 right-4 z-50 btn btn-circle btn-md bg-black/60 text-white hover:bg-white/20 border border-white/10 backdrop-blur-md shadow-lg tooltip tooltip-left"
+        data-tip="Activar Sonido">
+        <i class="bi bi-volume-mute-fill text-xl"></i>
+    </button>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- NAVBAR SCROLL-AWARE (sticky al bajar)    -->
+    <!-- ══════════════════════════════════════════ -->
+    <nav id="main-navbar" class="w-full z-[100]" aria-label="Navegación principal">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 sm:h-16">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2" aria-label="Ir al inicio">
+                <img src="/static/favicon.ico" alt="StarContract Logo"
+                    class="w-7 h-7 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]">
+                <span class="text-lg sm:text-xl font-black italic tracking-tighter text-white">STAR<span
+                        class="text-primary">-DOC</span></span>
+            </a>
+
+            <!-- Nav links (desktop) -->
+            <div class="hidden lg:flex items-center gap-6 text-sm text-gray-400">
+                <a href="#features" class="hover:text-white transition-colors">Características</a>
+                <a href="#advanced-tools" class="hover:text-white transition-colors">Módulos</a>
+                <a href="#how-it-works" class="hover:text-white transition-colors">Cómo funciona</a>
+                <a href="mailto:starcontrac@gmail.com" class="hover:text-white transition-colors">Contacto</a>
+            </div>
+
+            <!-- Acciones + CTA sticky (aparece al hacer scroll) -->
+            <div id="navbar-actions" class="flex items-center gap-2 sm:gap-3">
+                <!-- CTA Sticky (oculto por defecto, visible al hacer scroll) -->
+                <a href="/register-page" id="nav-sticky-cta"
+                    class="nav-sticky-cta hidden items-center gap-1.5 btn btn-xs btn-primary border-none text-white text-[11px] font-bold rounded-full px-3 shadow-lg shadow-primary/30"
+                    aria-label="Comenzar gratis">
+                    <i class="bi bi-lightning-charge-fill text-yellow-400"></i> Empezar Gratis
+                </a>
+                <a href="/login" class="btn btn-xs sm:btn-sm btn-ghost text-white hover:bg-white/10 font-normal">
+                    <span class="sm:hidden">Entrar</span>
+                    <span class="hidden sm:inline">Iniciar Sesión</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero min-h-[85vh] flex items-center justify-center relative px-4" id="hero-section">
+        <div class="text-center max-w-4xl z-10 animate-fade-in-up">
+            <div
+                class="badge badge-outline border-cyan-400 text-cyan-400 mb-6 p-4 gap-2 shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+                <i class="bi bi-stars"></i> Potenciado por Star-Contract
+            </div>
+
+            <h1 class="text-4xl xs:text-5xl md:text-7xl font-black tracking-tight mb-8 leading-tight">
+                El Futuro de la <br class="hidden md:block">
+                <span id="dynamic-hero-text"
+                    class="text-gradient-cyan min-w-[260px] sm:min-w-[300px] inline-block transition-all duration-500">Documentación
+                    Legal</span><span class="typed-cursor"></span>
+            </h1>
+
+            <!-- Sub-título orientado a BENEFICIO (conversión) -->
+            <p class="text-lg md:text-xl text-gray-400 mb-3 max-w-2xl mx-auto font-light leading-relaxed px-4">
+                Ahorra hasta <span class="text-white font-semibold">75% del tiempo</span> de redacción.
+                Contratos, demandas y expedientes certificados en IPFS — redactados por IA con
+                <span class="text-white font-semibold">rigor jurídico colombiano</span>.
+            </p>
+
+            <!-- CTAs principales -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+                <a href="/register-page" id="hero-cta-primary"
+                    class="btn btn-lg h-14 px-8 bg-white text-black hover:bg-gray-200 border-none rounded-full text-base font-bold shadow-2xl shadow-white/10 hover:shadow-white/20 transition-all w-full sm:w-auto"
+                    aria-label="Probar STAR-DOC gratis">
+                    <i class="bi bi-lightning-charge-fill text-yellow-500"></i> Probar Gratis
+                </a>
+                <a href="#features"
+                    class="btn btn-lg h-14 px-8 btn-ghost text-white border border-white/20 hover:bg-white/5 rounded-full text-base w-full sm:w-auto">
+                    <i class="bi bi-play-circle"></i> Ver Características
+                </a>
+            </div>
+
+            <!-- Badges de confianza bajo los CTAs -->
+            <div class="flex flex-wrap items-center justify-center gap-4 mt-5 text-xs text-gray-500">
+                <span class="flex items-center gap-1"><i class="bi bi-shield-lock-fill text-emerald-500"></i> Cifrado
+                    AES-256 / E2E</span>
+                <span class="flex items-center gap-1"><i class="bi bi-award-fill text-cyan-500"></i> Ley 527/1999
+                    (Video-Firma)</span>
+                <span class="flex items-center gap-1"><i class="bi bi-hdd-network-fill text-indigo-500"></i> Inmutable
+                    en IPFS (Merkle DAG)</span>
+                <span class="flex items-center gap-1"><i class="bi bi-search text-purple-500"></i> Cumplimiento SARLAFT
+                    / Lista Clinton</span>
+            </div>
+
+            <!-- Dashboard Preview Mockup -->
+            <div class="mt-16 mx-auto relative group perspective-1000">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-primary via-secondary to-accent rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-1000">
+                </div>
+                <div
+                    class="relative rounded-xl border border-white/10 bg-black/80 backdrop-blur-2xl shadow-2xl overflow-hidden transform group-hover:scale-[1.01] transition duration-700 ease-out">
+                    <iframe class="w-full aspect-video" src="https://www.youtube.com/embed/uTKZsq6LOeo"
+                        title="Star-Doc Demo" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TRUSTED BY - Logos de tecnología y respaldo               -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="py-10 px-4 border-y border-white/5 bg-black/20 sr" aria-label="Tecnologías que usamos">
+        <p class="text-center text-xs text-gray-600 uppercase tracking-widest font-semibold mb-6">Construido con
+            tecnología de clase mundial</p>
+        <div class="flex flex-wrap items-center justify-center gap-3 max-w-4xl mx-auto">
+            <span class="trust-logo"><i class="bi bi-google text-blue-400"></i> Google Gemini AI</span>
+            <span class="trust-logo"><i class="bi bi-hdd-network text-teal-400"></i> IPFS</span>
+            <span class="trust-logo"><i class="bi bi-lightning-charge text-yellow-400"></i> FastAPI</span>
+            <span class="trust-logo"><i class="bi bi-shield-lock text-emerald-400"></i> Encriptación E2E</span>
+            <span class="trust-logo"><i class="bi bi-file-earmark-word text-blue-300"></i> DOCX / PDF</span>
+            <span class="trust-logo"><i class="bi bi-database text-indigo-400"></i> PostgreSQL</span>
+            <span class="trust-logo"><i class="bi bi-journal-bookmark text-purple-400"></i> NotebookLM</span>
+        </div>
+    </section>
+
+    <!-- Features BENTO GRID -->
+    <section id="features" class="py-16 md:py-24 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-12 md:mb-16 sr">
+            <span
+                class="inline-block text-xs text-cyan-400 font-bold uppercase tracking-widest border border-cyan-500/30 rounded-full px-4 py-1 mb-4 bg-cyan-500/5">Plataforma
+                Completa</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Todo lo que necesitas, integrado</h2>
+            <p class="text-gray-400 max-w-xl mx-auto">Herramientas diseñadas para maximizar tu productividad legal. Sin
+                apps adicionales.</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Feature 1: AI -->
+            <div class="holo-card p-8 rounded-2xl relative overflow-hidden group sr" style="transition-delay:0.1s">
+                <div class="glow-spot"></div>
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="bi bi-robot text-9xl text-cyan-400"></i>
+                </div>
+                <div
+                    class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-6 border border-cyan-500/20 group-hover:border-cyan-500/50 transition-colors">
+                    <i class="bi bi-cpu text-2xl text-cyan-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Redacción con IA</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Olvídate del bloqueo del escritor. Pídele al asistente que redacte cláusulas, revise contratos o
+                    resuma expedientes en lenguaje natural.
+                </p>
+            </div>
+
+            <!-- Feature 2: Templates -->
+            <div class="holo-card p-8 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="bi bi-file-earmark-code text-9xl text-purple-400"></i>
+                </div>
+                <div
+                    class="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-500/20 group-hover:border-purple-500/50 transition-colors">
+                    <i class="bi bi-folder2-open text-2xl text-purple-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Gestión Inteligente</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Centraliza tus plantillas (.docx, .md). Busca, edita y utiliza tus modelos estándar con variables
+                    dinámicas inyectadas al instante.
+                </p>
+            </div>
+
+            <!-- Feature 3: Batch -->
+            <div class="holo-card p-8 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="bi bi-stack text-9xl text-emerald-400"></i>
+                </div>
+                <div
+                    class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:border-emerald-500/50 transition-colors">
+                    <i class="bi bi-layers text-2xl text-emerald-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Procesamiento por Lotes</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    ¿Necesitas 50 contratos idénticos? Sube un Excel y genera cientos de documentos personalizados en un
+                    solo clic.
+                </p>
+            </div>
+
+            <!-- Feature 4: Google Drive -->
+            <div class="holo-card p-8 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="bi bi-google text-9xl text-orange-400"></i>
+                </div>
+                <div
+                    class="w-14 h-14 rounded-xl bg-orange-500/10 flex items-center justify-center mb-6 border border-orange-500/20 group-hover:border-orange-500/50 transition-colors">
+                    <i class="bi bi-cloud-check text-2xl text-orange-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Integración Drive</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Conecta tu nube. Usa tus plantillas directamente desde Google Drive sin subir archivos manualmente
+                    una y otra vez.
+                </p>
+            </div>
+
+            <!-- Feature 5: Workflows -->
+            <div class="holo-card p-8 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="bi bi-diagram-3 text-9xl text-blue-400"></i>
+                </div>
+                <div
+                    class="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20 group-hover:border-blue-500/50 transition-colors">
+                    <i class="bi bi-calendar-check text-2xl text-blue-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Flujos Automatizados</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Define secuencias lógicas. Si un contrato supera cierto monto, solicita aprobación automática o
+                    envía notificaciones.
+                </p>
+            </div>
+
+            <!-- Feature 6: Security -->
+            <div class="holo-card p-8 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="bi bi-fingerprint text-9xl text-red-400"></i>
+                </div>
+                <div
+                    class="w-14 h-14 rounded-xl bg-red-500/10 flex items-center justify-center mb-6 border border-red-500/20 group-hover:border-red-500/50 transition-colors">
+                    <i class="bi bi-pen-fill text-2xl text-red-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Video-Firma & Integridad</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Firma con plena validez legal (Ley 527) y consentimiento grabado en video a viva voz. Almacenamiento
+                    en IPFS y encriptación de grado militar.
+                </p>
+            </div>
+        </div>
+    </section> <!-- /features bento grid -->
+
+    <!-- Módulos Jurídicos de Última Generación -->
+    <section id="advanced-tools" class="py-16 md:py-24 px-4 max-w-7xl mx-auto border-t border-white/5">
+        <div class="text-center mb-12 md:mb-16 sr">
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Módulos Jurídicos Avanzados</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto text-base md:text-lg">
+                Tecnología simplificada para abogados y firmas modernas. Todo integrado directamente en tu asistente
+                legal de chat.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <!-- Módulo 1: Buscador de Jurisprudencia -->
+            <div class="holo-card p-6 md:p-8 rounded-2xl relative overflow-hidden group sr"
+                style="transition-delay:0.1s">
+                <div class="glow-spot"></div>
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-opacity">
+                    <i class="bi bi-search text-9xl text-cyan-400"></i>
+                </div>
+                <div
+                    class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-6 border border-cyan-500/20 group-hover:border-cyan-500/50 transition-colors">
+                    <i class="bi bi-bank text-xl text-cyan-400"></i>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-3">Buscador de Jurisprudencia</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Consulta fallos de las altas cortes colombianas y el estado de expedientes judiciales en portales
+                    oficiales (como SAMAI) en segundos desde tu ventana de chat.
+                </p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-cyan-400 font-medium">
+                    <span>Utilidad:</span>
+                    <span class="text-gray-500">Fundamentar casos y vigilar procesos sin salir de la plataforma.</span>
+                </div>
+            </div>
+
+            <!-- Módulo 2: NotebookLM Legal -->
+            <div class="holo-card p-6 md:p-8 rounded-2xl relative overflow-hidden group sr"
+                style="transition-delay:0.2s">
+                <div class="glow-spot"></div>
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-opacity">
+                    <i class="bi bi-journal-bookmark text-9xl text-purple-400"></i>
+                </div>
+                <div
+                    class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-500/20 group-hover:border-purple-500/50 transition-colors">
+                    <i class="bi bi-journal-text text-xl text-purple-400"></i>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-3">NotebookLM Legal</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Crea carpetas digitales con leyes y casos específicos. Pregúntale al asistente para obtener
+                    respuestas con citas de normas reales y genera resúmenes en audio tipo podcast.
+                </p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-purple-400 font-medium">
+                    <span>Utilidad:</span>
+                    <span class="text-gray-500">Estudiar expedientes y leyes extensas con soporte de audio.</span>
+                </div>
+            </div>
+
+            <!-- Módulo 3: Seguridad IPFS -->
+            <div class="holo-card p-6 md:p-8 rounded-2xl relative overflow-hidden group sr"
+                style="transition-delay:0.3s">
+                <div class="glow-spot"></div>
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-opacity">
+                    <i class="bi bi-shield-check text-9xl text-emerald-400"></i>
+                </div>
+                <div
+                    class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:border-emerald-500/50 transition-colors">
+                    <i class="bi bi-pencil-square text-xl text-emerald-400"></i>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-3">Firma Digital & Certificación IPFS</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Firma digitalmente con video-consentimiento a viva voz (Ley 527). Sella tus contratos y actas en
+                    IPFS con expedientes Merkle DAG de inmutabilidad criptográfica.
+                </p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-emerald-400 font-medium">
+                    <span>Utilidad:</span>
+                    <span class="text-gray-500">Firmar acuerdos a distancia con plena cadena de custodia e integridad
+                        digital.</span>
+                </div>
+            </div>
+
+            <!-- Módulo 4: Entrevistador Conversacional -->
+            <div class="holo-card p-6 md:p-8 rounded-2xl relative overflow-hidden group sr"
+                style="transition-delay:0.4s">
+                <div class="glow-spot"></div>
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-opacity">
+                    <i class="bi bi-chat-left-quote text-9xl text-orange-400"></i>
+                </div>
+                <div
+                    class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-6 border border-orange-500/20 group-hover:border-orange-500/50 transition-colors">
+                    <i class="bi bi-mic text-xl text-orange-400"></i>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-3">Entrevistador Virtual & Voz</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Nuestra IA LUKA te entrevista amigablemente para llenar minutas, valida las respuestas contra
+                    esquemas legales colombianos y te lee las respuestas usando voz inteligente de IA.
+                </p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-orange-400 font-medium">
+                    <span>Utilidad:</span>
+                    <span class="text-gray-500">Generar minutas y demandas complejas respondiendo sencillas
+                        preguntas.</span>
+                </div>
+            </div>
+
+            <!-- Módulo 5: Auditoría NLP -->
+            <div class="holo-card p-6 md:p-8 rounded-2xl relative overflow-hidden group sr"
+                style="transition-delay:0.5s">
+                <div class="glow-spot"></div>
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-opacity">
+                    <i class="bi bi-file-earmark-diff text-9xl text-blue-400"></i>
+                </div>
+                <div
+                    class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20 group-hover:border-blue-500/50 transition-colors">
+                    <i class="bi bi-eye text-xl text-blue-400"></i>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-3">Auditoría Legal & SARLAFT</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Detecta riesgos contractuales en segundos mediante NLP. Realiza auditorías de cumplimiento KYC/AML
+                    en tiempo real bajo SARLAFT/SAGRILAFT con consulta a la Lista Clinton, OFAC y ONU.
+                </p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-blue-400 font-medium">
+                    <span>Utilidad:</span>
+                    <span class="text-gray-500">Prevenir el lavado de activos, mitigar riesgos legales y validar
+                        contrapartes.</span>
+                </div>
+            </div>
+
+            <!-- Módulo 6: Nube Privada y Sincronía -->
+            <div class="holo-card p-6 md:p-8 rounded-2xl relative overflow-hidden group sr"
+                style="transition-delay:0.6s">
+                <div class="glow-spot"></div>
+                <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-15 transition-opacity">
+                    <i class="bi bi-camera-video text-9xl text-pink-400"></i>
+                </div>
+                <div
+                    class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center mb-6 border border-pink-500/20 group-hover:border-pink-500/50 transition-colors">
+                    <i class="bi bi-camera-video-fill text-xl text-pink-400"></i>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-3">Videoconferencias Meet</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Crea salas virtuales seguras de Meet integradas con visor de PDF para debatir contratos o audiencias
+                    de conciliación en vivo. Generación de actas transcritas automáticamente por IA.
+                </p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-pink-400 font-medium">
+                    <span>Utilidad:</span>
+                    <span class="text-gray-500">Reuniones de negociación, firmas remotas y conciliaciones grabadas en
+                        vivo.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- MÉTRICAS / SOCIAL PROOF CON ICONOS                       -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="py-16 px-4 max-w-5xl mx-auto" id="metrics-section" aria-label="Métricas y estadísticas">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sr">
+            <div class="holo-card rounded-2xl p-6 text-center group">
+                <div class="glow-spot"></div>
+                <i class="bi bi-clock-history text-2xl text-cyan-400 mb-3 block"></i>
+                <div class="text-4xl md:text-5xl font-black text-gradient-cyan" data-counter="75" data-suffix="%">0
+                </div>
+                <p class="text-gray-500 text-xs mt-2 leading-snug">Ahorro de Tiempo<br>de Redacción</p>
+            </div>
+            <div class="holo-card rounded-2xl p-6 text-center group">
+                <div class="glow-spot"></div>
+                <i class="bi bi-shield-check text-2xl text-purple-400 mb-3 block"></i>
+                <div class="text-4xl md:text-5xl font-black text-gradient-purple" data-counter="1200" data-suffix="+">0
+                </div>
+                <p class="text-gray-500 text-xs mt-2 leading-snug">Documentos Certificados<br>en IPFS</p>
+            </div>
+            <div class="holo-card rounded-2xl p-6 text-center group">
+                <div class="glow-spot"></div>
+                <i class="bi bi-bank text-2xl text-cyan-400 mb-3 block"></i>
+                <div class="text-4xl md:text-5xl font-black text-gradient-cyan" data-counter="800" data-suffix="+">0
+                </div>
+                <p class="text-gray-500 text-xs mt-2 leading-snug">Leyes y Sentencias<br>Indexadas</p>
+            </div>
+            <div class="holo-card rounded-2xl p-6 text-center group">
+                <div class="glow-spot"></div>
+                <i class="bi bi-check-all text-2xl text-purple-400 mb-3 block"></i>
+                <div class="text-4xl md:text-5xl font-black text-gradient-purple" data-counter="100" data-suffix="%">0
+                </div>
+                <p class="text-gray-500 text-xs mt-2 leading-snug">Citas Legales<br>Verificables</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-24 relative border-t border-white/5 bg-black/20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-20 sr">
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Flujo de Trabajo Simplificado</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    De la plantilla al documento final en cuatro pasos sencillos. Sin complicaciones técnicas.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+                <!-- Linea conectora (solo desktop) -->
+                <div class="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-500/40 via-purple-500/40 to-emerald-500/40 -z-10 progress-line"
+                    id="progress-line">
+                </div>
+
+                <!-- Step 1 -->
+                <div class="text-center group">
+                    <div
+                        class="w-24 h-24 mx-auto bg-base-300/50 rounded-full border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10 shadow-lg shadow-black/50">
+                        <i class="bi bi-file-earmark-word text-4xl text-cyan-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">1. Conecta</h3>
+                    <p class="text-sm text-gray-500">Sube tus plantillas .docx o .md existentes.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="text-center group">
+                    <div
+                        class="w-24 h-24 mx-auto bg-base-300/50 rounded-full border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10 shadow-lg shadow-black/50">
+                        <i class="bi bi-braces text-4xl text-purple-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">2. Integra</h3>
+                    <p class="text-sm text-gray-500">Define variables y conecta fuentes de datos.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="text-center group">
+                    <div
+                        class="w-24 h-24 mx-auto bg-base-300/50 rounded-full border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10 shadow-lg shadow-black/50">
+                        <i class="bi bi-cpu text-4xl text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">3. Genera</h3>
+                    <p class="text-sm text-gray-500">La IA redacta y completa el documento al instante.</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="text-center group">
+                    <div
+                        class="w-24 h-24 mx-auto bg-base-300/50 rounded-full border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10 shadow-lg shadow-black/50">
+                        <i class="bi bi-pen text-4xl text-emerald-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">4. Firma y Envía</h3>
+                    <p class="text-sm text-gray-500">Firma digitalmente con validez legal y exporta en PDF o Word.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Use Cases Section -->
+    <section class="py-24 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Adaptable a tu Industria</h2>
+            <div class="flex flex-wrap justify-center gap-4" id="case-tabs">
+                <button onclick="switchTab('law')" id="tab-law"
+                    class="btn btn-outline border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500 active-tab-btn transition-all">Firmas
+                    Legales</button>
+                <button onclick="switchTab('hr')" id="tab-hr"
+                    class="btn btn-outline border-white/10 text-gray-400 hover:bg-white/5 hover:text-white transition-all">Recursos
+                    Humanos</button>
+                <button onclick="switchTab('startup')" id="tab-startup"
+                    class="btn btn-outline border-white/10 text-gray-400 hover:bg-white/5 hover:text-white transition-all">Startups
+                    & PYMEs</button>
+            </div>
+        </div>
+
+        <div class="relative min-h-[400px]">
+            <!-- Case: Law Firms -->
+            <div id="case-law" class="case-content grid grid-cols-1 md:grid-cols-2 gap-12 items-center animate-fade-in">
+                <div class="order-2 md:order-1">
+                    <h3 class="text-3xl font-bold text-white mb-4">Automatización de Contratos Masivos</h3>
+                    <p class="text-gray-400 mb-6 text-lg">
+                        Libera a tus abogados junior de la redacción repetitiva. Genera cientos de NDAs, contratos de
+                        prestación de servicios o poderes en minutos, no días.
+                    </p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-cyan-500"></i> Reducción del 80% en tiempo de
+                            borrador.</li>
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-cyan-500"></i> Consistencia legal garantizada.</li>
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-cyan-500"></i> Revisión por IA de cláusulas
+                            riesgosas.</li>
+                    </ul>
+                    <a href="/register-page" class="btn btn-primary text-white">Empezar Ahora</a>
+                </div>
+                <div
+                    class="order-1 md:order-2 holo-card p-2 rounded-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                    <div class="bg-black/50 rounded-xl p-6 border border-white/5">
+                        <div class="flex items-center gap-4 mb-4 border-b border-white/10 pb-4">
+                            <i class="bi bi-file-text text-3xl text-cyan-400"></i>
+                            <div>
+                                <div class="font-bold text-white">Contrato_Servicios_vFinal.docx</div>
+                                <div class="text-xs text-gray-500">Generado hace 2 seg • 45kb</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 opacity-50">
+                            <div class="h-2 bg-white/20 rounded w-3/4"></div>
+                            <div class="h-2 bg-white/20 rounded w-full"></div>
+                            <div class="h-2 bg-white/20 rounded w-5/6"></div>
+                            <div class="h-2 bg-white/20 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case: HR -->
+            <div id="case-hr"
+                class="case-content hidden grid grid-cols-1 md:grid-cols-2 gap-12 items-center animate-fade-in">
+                <div class="order-2 md:order-1">
+                    <h3 class="text-3xl font-bold text-white mb-4">Onboarding de Empleados sin Fricción</h3>
+                    <p class="text-gray-400 mb-6 text-lg">
+                        Envía cartas de oferta, contratos laborales y acuerdos de confidencialidad personalizados
+                        automáticamente cada vez que contratas a alguien.
+                    </p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-purple-500"></i> Experiencia de candidato premium.
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-purple-500"></i> Sin errores de "copiar y pegar".
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-purple-500"></i> Integrable con tu ATS.</li>
+                    </ul>
+                    <button onclick="openVideoModal('uTKZsq6LOeo')" class="btn btn-primary text-white">
+                        <i class="bi bi-play-circle-fill mr-2"></i> Ver Demo RRHH
+                    </button>
+
+                </div>
+                <div
+                    class="order-1 md:order-2 holo-card p-2 rounded-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+                    <div class="bg-black/50 rounded-xl p-6 border border-white/5">
+                        <div class="flex items-center gap-4 mb-4 border-b border-white/10 pb-4">
+                            <div class="avatar">
+                                <div
+                                    class="w-10 rounded-full bg-purple-500/20 text-purple-500 flex items-center justify-center font-bold">
+                                    JD</div>
+                            </div>
+                            <div>
+                                <div class="font-bold text-white">Oferta Laboral - Juan Doe</div>
+                                <div class="text-xs text-green-400">Enviado exitosamente</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 opacity-50">
+                            <div class="h-2 bg-white/20 rounded w-full"></div>
+                            <div class="h-2 bg-white/20 rounded w-5/6"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case: Startups -->
+            <div id="case-startup"
+                class="case-content hidden grid grid-cols-1 md:grid-cols-2 gap-12 items-center animate-fade-in">
+                <div class="order-2 md:order-1">
+                    <h3 class="text-3xl font-bold text-white mb-4">Legal Tech para Fundadores</h3>
+                    <p class="text-gray-400 mb-6 text-lg">
+                        No gastes tu capital semilla en abogados costosos para documentos estándar. Gestiona tus pactos
+                        de socios, vesting y contratos de advisors tú mismo.
+                    </p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-emerald-500"></i> Ahorro de +$5000 USD/año.</li>
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-emerald-500"></i> Documentos listos para Due
+                            Diligence.</li>
+                        <li class="flex items-center gap-3 text-gray-300"><i
+                                class="bi bi-check-circle-fill text-emerald-500"></i> Escalabilidad inmediata.</li>
+                    </ul>
+                    <a href="/register-page" class="btn btn-primary text-white">Prueba Gratis</a>
+                </div>
+                <div
+                    class="order-1 md:order-2 holo-card p-2 rounded-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <div class="bg-black/50 rounded-xl p-6 border border-white/5">
+                        <div class="flex items-center gap-4 mb-4 border-b border-white/10 pb-4">
+                            <i class="bi bi-rocket-takeoff text-3xl text-emerald-400"></i>
+                            <div>
+                                <div class="font-bold text-white">Pacto_Socios.pdf</div>
+                                <div class="text-xs text-gray-500">Firmado digitalmente</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 opacity-50">
+                            <div class="h-2 bg-white/20 rounded w-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TESTIMONIOS + DEMO (Carousel de múltiples reseñas)       -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-gradient-to-b from-black/40 to-transparent" aria-label="Testimonios de clientes">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+            <!-- Demo Video -->
+            <div class="relative group">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-1000">
+                </div>
+                <div
+                    class="relative rounded-2xl bg-black border border-white/10 overflow-hidden shadow-2xl aspect-video flex items-center justify-center">
+                    <div class="text-center">
+                        <button onclick="openVideoModal('uTKZsq6LOeo')"
+                            class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm border border-white/20 hover:scale-110 hover:bg-white/20 transition-all cursor-pointer"
+                            aria-label="Reproducir demo de STAR-DOC">
+                            <i class="bi bi-play-fill text-4xl text-white ml-1"></i>
+                        </button>
+                        <p class="text-gray-400 font-medium text-sm">Ver Demo Completa · 2 min</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonios Carousel -->
+            <div class="relative">
+                <i class="bi bi-quote text-6xl text-purple-500/20 absolute -top-10 -left-6" aria-hidden="true"></i>
+
+                <!-- Slide 1 -->
+                <div class="testimonial-slide active holo-card p-8 rounded-2xl border-l-4 border-l-purple-500">
+                    <div class="flex items-center gap-4 mb-5">
+                        <div
+                            class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-black text-lg">
+                            ER</div>
+                        <div>
+                            <h4 class="font-bold text-base text-white">Elena Rodríguez</h4>
+                            <p class="text-xs text-purple-400 font-mono uppercase tracking-widest">Directora Legal ·
+                                TechSoft</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-1 mb-4" aria-label="5 estrellas">
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i><i
+                            class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i><i
+                            class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                    </div>
+                    <p class="text-gray-300 italic leading-relaxed text-base">
+                        "Antes nos tomaba 3 días redactar contratos laborales. Con STAR-DOC lo hacemos en <strong
+                            class="text-white">15 minutos y sin errores</strong>. Es el multiplicador de fuerza que
+                        necesitábamos."
+                    </p>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="testimonial-slide holo-card p-8 rounded-2xl border-l-4 border-l-cyan-500">
+                    <div class="flex items-center gap-4 mb-5">
+                        <div
+                            class="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-black text-lg">
+                            CM</div>
+                        <div>
+                            <h4 class="font-bold text-base text-white">Carlos Mendoza</h4>
+                            <p class="text-xs text-cyan-400 font-mono uppercase tracking-widest">Abogado Independiente ·
+                                Bogotá</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-1 mb-4" aria-label="5 estrellas">
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i><i
+                            class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i><i
+                            class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                    </div>
+                    <p class="text-gray-300 italic leading-relaxed text-base">
+                        "La bóveda IPFS me permite presentar evidencia digital con <strong
+                            class="text-white">inmutabilidad criptográfica</strong> ante juzgados. Una herramienta que
+                        los otros bufetes aún no conocen."
+                    </p>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="testimonial-slide holo-card p-8 rounded-2xl border-l-4 border-l-emerald-500">
+                    <div class="flex items-center gap-4 mb-5">
+                        <div
+                            class="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-lg">
+                            AL</div>
+                        <div>
+                            <h4 class="font-bold text-base text-white">Andrea López</h4>
+                            <p class="text-xs text-emerald-400 font-mono uppercase tracking-widest">CEO · LegalTech
+                                Startup CO</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-1 mb-4" aria-label="5 estrellas">
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i><i
+                            class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i><i
+                            class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                        <i class="bi bi-star-fill text-yellow-400 text-sm"></i>
+                    </div>
+                    <p class="text-gray-300 italic leading-relaxed text-base">
+                        "Generamos <strong class="text-white">500 contratos de adhesión</strong> para nuestra app
+                        fintech en 2 horas. El auditor de cláusulas abusivas nos salvó de 3 problemas regulatorios."
+                    </p>
+                </div>
+
+                <!-- Controles del carousel -->
+                <div class="flex items-center justify-between mt-5">
+                    <div class="flex gap-2" id="testimonial-dots" role="tablist" aria-label="Testimonios">
+                        <button class="w-2 h-2 rounded-full bg-cyan-400 transition-all" onclick="goToTestimonial(0)"
+                            aria-label="Testimonio 1"></button>
+                        <button class="w-2 h-2 rounded-full bg-white/20 transition-all" onclick="goToTestimonial(1)"
+                            aria-label="Testimonio 2"></button>
+                        <button class="w-2 h-2 rounded-full bg-white/20 transition-all" onclick="goToTestimonial(2)"
+                            aria-label="Testimonio 3"></button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="prevTestimonial()"
+                            class="btn btn-xs btn-circle bg-white/10 border-white/10 text-white hover:bg-white/20"
+                            aria-label="Testimonio anterior">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button onclick="nextTestimonial()"
+                            class="btn btn-xs btn-circle bg-white/10 border-white/10 text-white hover:bg-white/20"
+                            aria-label="Siguiente testimonio">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- CTA Final -->
+    <section class="py-24 px-4 relative sr">
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div
+                class="absolute -inset-4 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 rounded-3xl blur-2xl">
+            </div>
+            <div class="relative holo-card p-12 md:p-16 rounded-3xl border border-white/10">
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Lleva STAR-DOC en tu bolsillo</h2>
+                <p class="text-gray-400 text-base mb-6 max-w-2xl mx-auto">
+                    Instala nuestra aplicación móvil PWA directamente desde tu navegador. Accede de forma instantánea al
+                    Asistente IA con pgvector, consulta expedientes y firma contratos desde cualquier lugar, incluso sin
+                    conexión a internet.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button id="cta-pwa-install-btn"
+                        class="flex items-center justify-center gap-2 btn btn-lg h-14 px-12 bg-gradient-to-r from-primary via-secondary to-accent border-none text-white rounded-full text-base font-bold shadow-2xl shadow-primary/30 hover:scale-105 transition-all w-full sm:w-auto"
+                        aria-label="Descargar aplicación de STAR-DOC">
+                        <i class="bi bi-download mr-2"></i> Descargar Aplicación Móvil
+                    </button>
+                    <a href="/register-page" id="cta-pwa-fallback-btn"
+                        class="btn btn-lg h-14 px-12 btn-ghost text-white border border-white/20 hover:bg-white/5 rounded-full text-base font-bold transition-all w-full sm:w-auto"
+                        aria-label="Comenzar gratis en STAR-DOC">
+                        <i class="bi bi-rocket-takeoff-fill mr-2"></i> Comenzar Gratis en Web
+                    </a>
+                </div>
+                <p class="text-xs text-gray-600 mt-4">✓ Instalación instantánea · ✓ Sin usar tiendas de apps · ✓ Soporte
+                    Offline completo</p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- FOOTER MEJORADO CON COLUMNAS                             -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <footer class="border-t border-white/5 mt-12 bg-black/50 backdrop-blur-sm" aria-label="Pie de página">
+        <div class="max-w-7xl mx-auto px-4 pt-14 pb-28">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+
+                <!-- Columna Brand -->
+                <div class="col-span-2 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <img src="/static/favicon.ico" alt="Logo STAR-DOC" class="w-7 h-7">
+                        <span class="text-base font-black italic tracking-tighter text-white">STAR<span
+                                class="text-primary">-DOC</span></span>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-4">Suite legal con IA para abogados colombianos.
+                        Contratos, evidencia digital, firma electrónica y jurisprudencia en un solo lugar.</p>
+                    <div class="flex gap-3">
+                        <a href="https://x.com/starcontract" target="_blank" rel="noopener noreferrer"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                            aria-label="Twitter/X">
+                            <i class="bi bi-twitter-x text-sm"></i>
+                        </a>
+                        <a href="https://github.com/starcontrac-dev" target="_blank" rel="noopener noreferrer"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                            aria-label="GitHub">
+                            <i class="bi bi-github text-sm"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/star-contract-abogado-fintech/" target="_blank"
+                            rel="noopener noreferrer"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                            aria-label="LinkedIn">
+                            <i class="bi bi-linkedin text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Columna Plataforma -->
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-4">Plataforma</h3>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#features" class="hover:text-white transition-colors">Características</a></li>
+                        <li><a href="#advanced-tools" class="hover:text-white transition-colors">Módulos Jurídicos</a>
+                        </li>
+                        <li><a href="#how-it-works" class="hover:text-white transition-colors">Cómo Funciona</a></li>
+                        <li><a href="/register-page" class="hover:text-white transition-colors">Registro Gratuito</a>
+                        </li>
+                        <li><a href="/login" class="hover:text-white transition-colors">Iniciar Sesión</a></li>
+                    </ul>
+                </div>
+
+                <!-- Columna Legal -->
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-4">Legal</h3>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-white transition-colors">Términos de Uso</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Política de Privacidad</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Ley 1581/2012</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Ley 527/1999</a></li>
+                    </ul>
+                </div>
+
+                <!-- Columna Contacto -->
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-4">Contacto</h3>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="mailto:starcontrac@gmail.com"
+                                class="hover:text-white transition-colors flex items-center gap-1.5"><i
+                                    class="bi bi-envelope text-xs"></i> starcontrac@gmail.com</a></li>
+                        <li class="text-xs"><i class="bi bi-geo-alt text-xs mr-1"></i>Colombia</li>
+                        <li class="text-xs pt-2 text-gray-600">Soporte: Lun – Vie · 8AM – 6PM COT</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom bar -->
+            <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-gray-600">© 2026 Star-Doc AI. Todos los derechos reservados. Desarrollado en
+                    Colombia 🇨🇴</p>
+                <div class="flex items-center gap-3 text-xs text-gray-600">
+                    <span class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-600"></i> Cifrado
+                        E2E</span>
+                    <span class="flex items-center gap-1"><i class="bi bi-lock-fill text-blue-600"></i> TLS 1.3</span>
+                    <span class="flex items-center gap-1"><i class="bi bi-hdd-network text-teal-600"></i> IPFS
+                        Inmutable</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Marquee de Tecnologías Fijo en Bottom con Opción de Cerrar -->
+    <section id="fixed-marquee-banner" class="marquee-fixed-bottom overflow-hidden">
+        <!-- Botón de Cerrar Premium -->
+        <button onclick="closeMarqueeBanner()"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors z-10 p-1 bg-black/40 hover:bg-black/70 rounded-full w-6 h-6 flex items-center justify-center border border-white/10"
+            aria-label="Cerrar barra de tecnologías">
+            <i class="bi bi-x text-base font-bold"></i>
+        </button>
+        <div class="marquee-track">
+            <div class="marquee-item"><i class="bi bi-cpu"></i> Gemini AI</div>
+            <div class="marquee-item"><i class="bi bi-camera-video"></i> Videollamadas Meet</div>
+            <div class="marquee-item"><i class="bi bi-pen"></i> Video-Firma (Ley 527)</div>
+            <div class="marquee-item"><i class="bi bi-shield-check"></i> SARLAFT & Lista Clinton</div>
+            <div class="marquee-item"><i class="bi bi-google"></i> Google Drive</div>
+            <div class="marquee-item"><i class="bi bi-filetype-py"></i> Python (NLP)</div>
+            <div class="marquee-item"><i class="bi bi-lightning-charge"></i> API </div>
+            <div class="marquee-item"><i class="bi bi-code-slash"></i> LegalTech</div>
+            <div class="marquee-item"><i class="bi bi-braces"></i> plantillas</div>
+            <div class="marquee-item"><i class="bi bi-wallet2"></i> Web3 Auth</div>
+            <div class="marquee-item"><i class="bi bi-file-earmark-word"></i> DOCX / PDF</div>
+            <div class="marquee-item"><i class="bi bi-shield-lock"></i> Encriptación E2E</div>
+            <div class="marquee-item"><i class="bi bi-database"></i> Seguridad-SQL</div>
+            <!-- Duplicado para scroll infinito -->
+            <div class="marquee-item"><i class="bi bi-cpu"></i> Gemini AI</div>
+            <div class="marquee-item"><i class="bi bi-camera-video"></i> Videollamadas Meet</div>
+            <div class="marquee-item"><i class="bi bi-pen"></i> Video-Firma (Ley 527)</div>
+            <div class="marquee-item"><i class="bi bi-shield-check"></i> SARLAFT & Lista Clinton</div>
+            <div class="marquee-item"><i class="bi bi-google"></i> Google Drive</div>
+            <div class="marquee-item"><i class="bi bi-filetype-py"></i> Python (NLP)</div>
+            <div class="marquee-item"><i class="bi bi-lightning-charge"></i> API </div>
+            <div class="marquee-item"><i class="bi bi-code-slash"></i> LegalTech</div>
+            <div class="marquee-item"><i class="bi bi-braces"></i> plantillas</div>
+            <div class="marquee-item"><i class="bi bi-wallet2"></i> Web3 Auth</div>
+            <div class="marquee-item"><i class="bi bi-file-earmark-word"></i> DOCX / PDF</div>
+            <div class="marquee-item"><i class="bi bi-shield-lock"></i> Encriptación E2E</div>
+            <div class="marquee-item"><i class="bi bi-database"></i> Seguridad-SQL</div>
+        </div>
+    </section>
+</div>
+
+<!-- Video Modal -->
+<dialog id="video_modal" class="modal bg-black/80 backdrop-blur-sm">
+    <div
+        class="modal-box w-11/12 max-w-5xl bg-black border border-white/10 p-0 overflow-hidden relative shadow-2xl shadow-cyan-500/10">
+        <form method="dialog">
+            <button
+                class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-50 text-white bg-black/50 hover:bg-white/20"
+                onclick="closeVideoModal()">✕</button>
+        </form>
+        <div class="aspect-video w-full">
+            <iframe id="youtube_iframe" class="w-full h-full" src="" title="YouTube video player" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button onclick="closeVideoModal()">close</button>
+    </form>
+</dialog>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .active-tab-btn {
+        background-color: rgba(6, 182, 212, 0.1);
+        border-color: rgb(6, 182, 212);
+        color: rgb(34, 211, 238);
+    }
+</style>
+
+<script>
+    // --- Redirect si ya existe sesión ---
+    if (localStorage.getItem('access_token')) {
+        const nav = document.getElementById('navbar-actions');
+        if (nav) {
+            nav.innerHTML = `<a href="/home" class="btn btn-xs sm:btn-sm btn-outline border-white/20 text-white hover:bg-white/10 gap-2"><i class="bi bi-speedometer2"></i> Ir al Panel</a>`;
+        }
+        const heroCta = document.getElementById('hero-cta-primary');
+        if (heroCta) {
+            heroCta.href = '/home';
+            heroCta.innerHTML = `<i class="bi bi-speedometer2"></i> Ir al Panel`;
+        }
+    }
+
+    // --- Tab Switching ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.case-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('#case-tabs button').forEach(btn => {
+            btn.classList.remove('active-tab-btn', 'border-cyan-500/30', 'text-cyan-400', 'bg-cyan-500/10');
+            btn.classList.add('border-white/10', 'text-gray-400');
+        });
+        document.getElementById('case-' + tabId).classList.remove('hidden');
+        const activeBtn = document.getElementById('tab-' + tabId);
+        activeBtn.classList.remove('border-white/10', 'text-gray-400');
+        activeBtn.classList.add('active-tab-btn', 'border-cyan-500/30', 'text-cyan-400');
+    }
+
+    // --- Video Modal ---
+    function openVideoModal(videoId) {
+        const modal = document.getElementById('video_modal');
+        document.getElementById('youtube_iframe').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        modal.showModal();
+    }
+    function closeVideoModal() { document.getElementById('youtube_iframe').src = ''; }
+
+    // --- Testimonios Carousel ---
+    let currentTestimonial = 0;
+    const slides = document.querySelectorAll('.testimonial-slide');
+    const dots = document.querySelectorAll('#testimonial-dots button');
+
+    function goToTestimonial(idx) {
+        slides.forEach(s => s.classList.remove('active'));
+        dots.forEach(d => { d.className = 'w-2 h-2 rounded-full bg-white/20 transition-all'; });
+        currentTestimonial = idx;
+        slides[idx].classList.add('active');
+        dots[idx].className = 'w-2 h-2 rounded-full bg-cyan-400 transition-all';
+    }
+    function nextTestimonial() { goToTestimonial((currentTestimonial + 1) % slides.length); }
+    function prevTestimonial() { goToTestimonial((currentTestimonial - 1 + slides.length) % slides.length); }
+    // Auto-rotate testimonios cada 6 segundos
+    setInterval(nextTestimonial, 6000);
+
+    // --- Navbar Scroll-Aware ---
+    const navbar = document.getElementById('main-navbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 60) { navbar.classList.add('scrolled'); }
+        else { navbar.classList.remove('scrolled'); }
+    }, { passive: true });
+
+    // --- Typed Effect Mejorado (letra por letra) ---
+    const heroWords = ["Documentación Legal", "Firma Digital Segura", "Seguridad IPFS Web3", "Auditoría de Contratos", "Justicia Digital"];
+    let wordIdx = 0;
+    const heroSpan = document.getElementById('dynamic-hero-text');
+    function typeWord(word, gradClass) {
+        heroSpan.textContent = '';
+        heroSpan.className = gradClass + ' min-w-[260px] sm:min-w-[300px] inline-block';
+        let i = 0;
+        const timer = setInterval(() => {
+            heroSpan.textContent += word[i];
+            i++;
+            if (i >= word.length) clearInterval(timer);
+        }, 60);
+    }
+    if (heroSpan) {
+        setInterval(() => {
+            wordIdx = (wordIdx + 1) % heroWords.length;
+            const cls = wordIdx % 2 === 0 ? 'text-gradient-cyan' : 'text-gradient-purple';
+            heroSpan.style.opacity = '0';
+            setTimeout(() => {
+                typeWord(heroWords[wordIdx], cls);
+                heroSpan.style.opacity = '1';
+            }, 400);
+        }, 3500);
+    }
+
+    // --- DOMContentLoaded ---
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // ═══ Scroll Reveal con IntersectionObserver ═══
+        const srObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); srObserver.unobserve(e.target); } });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.sr, .sr-left, .sr-right').forEach(el => srObserver.observe(el));
+
+        // ═══ Contadores Animados ═══
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (!e.isIntersecting) return;
+                e.target.querySelectorAll('[data-counter]').forEach(el => {
+                    const target = parseFloat(el.dataset.counter);
+                    const suffix = el.dataset.suffix || '';
+                    const isFloat = target % 1 !== 0;
+                    const duration = 2000;
+                    const startTime = performance.now();
+                    function update(now) {
+                        const progress = Math.min((now - startTime) / duration, 1);
+                        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                        const current = target * eased;
+                        el.textContent = (isFloat ? current.toFixed(1) : Math.floor(current)) + suffix;
+                        if (progress < 1) requestAnimationFrame(update);
+                    }
+                    requestAnimationFrame(update);
+                });
+                counterObserver.unobserve(e.target);
+            });
+        }, { threshold: 0.3 });
+        const metricsGrid = document.querySelector('#metrics-section .grid');
+        if (metricsGrid) counterObserver.observe(metricsGrid);
+
+        // ═══ Mouse Glow en Holo Cards ═══
+        document.querySelectorAll('.holo-card').forEach(card => {
+            let spot = card.querySelector('.glow-spot');
+            if (!spot) { spot = document.createElement('div'); spot.className = 'glow-spot'; card.appendChild(spot); }
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                spot.style.left = (e.clientX - rect.left) + 'px';
+                spot.style.top = (e.clientY - rect.top) + 'px';
+            });
+        });
+
+        // ═══ Línea de Progreso Animada (How It Works) ═══
+        const progressLine = document.getElementById('progress-line');
+        if (progressLine) {
+            const plObserver = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { progressLine.classList.add('visible'); plObserver.unobserve(e.target); } });
+            }, { threshold: 0.3 });
+            plObserver.observe(progressLine);
+        }
+
+        // ═══ Background Video ═══
+        const video = document.getElementById('bg-video');
+        const soundBtn = document.getElementById('sound-toggle');
+        const soundIcon = soundBtn?.querySelector('i');
+        let loopCount = 0;
+        const MAX_LOOPS = 4;
+        if (video) {
+            video.play().catch(e => console.log("Autoplay blocked:", e));
+            soundBtn?.addEventListener('click', () => {
+                video.muted = !video.muted;
+                if (video.muted) { soundIcon.className = 'bi bi-volume-mute-fill text-xl'; soundBtn.setAttribute('data-tip', 'Activar Sonido'); }
+                else { soundIcon.className = 'bi bi-volume-up-fill text-xl'; soundBtn.setAttribute('data-tip', 'Silenciar'); }
+            });
+            video.addEventListener('ended', () => {
+                loopCount++;
+                if (loopCount < MAX_LOOPS) { video.currentTime = 0; video.play(); }
+                else {
+                    video.pause(); video.style.transition = 'opacity 2s ease-out'; video.style.opacity = '0';
+                    if (soundBtn) { soundBtn.style.transition = 'opacity 0.5s'; soundBtn.style.opacity = '0'; setTimeout(() => soundBtn.remove(), 500); }
+                }
+            });
+        }
+
+        // --- Manejo de Cierre de la Barra de Tecnologías ---
+        window.closeMarqueeBanner = function () {
+            const banner = document.getElementById('fixed-marquee-banner');
+            if (banner) {
+                banner.style.opacity = '0';
+                banner.style.transform = 'translateY(100%)';
+                setTimeout(() => banner.remove(), 400);
+                sessionStorage.setItem('marquee_banner_closed', 'true');
+            }
+        };
+
+        // Ocultar banner si ya fue cerrado en la sesión actual
+        if (sessionStorage.getItem('marquee_banner_closed') === 'true') {
+            const banner = document.getElementById('fixed-marquee-banner');
+            if (banner) banner.remove();
+        }
+    });
+</script>
+
+<!-- START AI CHAT WIDGET -->
+{% include 'components/chat_widget.html' %}
+<script src="/static/js/chat-widget.js?v=1.0.1"></script>
+<!-- END AI CHAT WIDGET -->
+
+{% endblock %}

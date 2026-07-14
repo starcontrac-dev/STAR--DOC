@@ -1,0 +1,349 @@
+<!-- Modal de Comparación Inteligente de Documentos (Diff IA) -->
+<!-- Estilos premium para el diff HTML generado por Python difflib -->
+<style>
+    /* ============================================================= */
+    /* ESTILOS DEL DIFF VIEWER - GitHub Dark Mode (STAR-DOC 2026)    */
+    /* Aplicados al contenedor x-html="results.html_diff"            */
+    /* ============================================================= */
+    [x-html] table.diff {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+        font-size: 0.72rem;
+        line-height: 1.6;
+        background: #0d1117;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    [x-html] table.diff td {
+        padding: 2px 12px;
+        vertical-align: top;
+        white-space: pre-wrap;
+        word-break: break-all;
+        border: none;
+    }
+    /* Línea con número */
+    [x-html] .diff_header, [x-html] td.diff_header {
+        background: #161b22;
+        color: #6e7681;
+        text-align: right;
+        padding: 2px 8px;
+        min-width: 42px;
+        user-select: none;
+        border-right: 1px solid #30363d;
+        font-variant-numeric: tabular-nums;
+    }
+    /* Línea eliminada */
+    [x-html] .diff_sub, [x-html] td.diff_sub,
+    [x-html] tr.diff_sub td:not(.diff_header) {
+        background: rgba(255, 59, 48, 0.08);
+        color: #ffa0a0;
+    }
+    [x-html] .diff_sub span, [x-html] td.diff_sub span {
+        background: rgba(255, 59, 48, 0.25);
+        border-radius: 2px;
+        padding: 0 1px;
+    }
+    /* Línea añadida */
+    [x-html] .diff_add, [x-html] td.diff_add,
+    [x-html] tr.diff_add td:not(.diff_header) {
+        background: rgba(46, 160, 67, 0.08);
+        color: #7ee787;
+    }
+    [x-html] .diff_add span, [x-html] td.diff_add span {
+        background: rgba(46, 160, 67, 0.25);
+        border-radius: 2px;
+        padding: 0 1px;
+    }
+    /* Línea modificada / chg */
+    [x-html] .diff_chg, [x-html] td.diff_chg {
+        background: rgba(210, 153, 34, 0.08);
+        color: #e3b341;
+    }
+    [x-html] .diff_chg span {
+        background: rgba(210, 153, 34, 0.25);
+        border-radius: 2px;
+        padding: 0 1px;
+    }
+    /* Línea sin cambios */
+    [x-html] td.diff_equal,
+    [x-html] tr td:not(.diff_header):not(.diff_sub):not(.diff_add):not(.diff_chg) {
+        color: #8b949e;
+    }
+    /* Separadores */
+    [x-html] tr.diff_next td {
+        background: #161b22;
+        color: #30363d;
+        text-align: center;
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        border-top: 1px solid #30363d;
+        border-bottom: 1px solid #30363d;
+    }
+</style>
+<div x-data="diffViewer" 
+     x-show="isOpen" 
+     x-cloak 
+     @open-diff-modal.window="openModal($event.detail)"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+     style="display: none;">
+     
+    <!-- Contenedor del Modal -->
+    <div @click.away="closeModal()" 
+         class="relative w-full max-w-5xl h-[85vh] bg-[#0c101f] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-up">
+        
+        <!-- Cabecera -->
+        <div class="px-6 py-4 bg-white/5 border-b border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-600/20 text-indigo-400 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-white">Comparador Inteligente de Documentos (Diff IA)</h2>
+                    <p class="text-xs text-gray-400">Compara dos versiones contractuales y evalúa riesgos legales bajo el derecho colombiano</p>
+                </div>
+            </div>
+            
+            <button @click="closeModal()" class="text-gray-400 hover:text-white transition-colors p-1.5 hover:bg-white/5 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Cuerpo del modal -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            
+            <!-- Estado Inicial: Formulario de Subida -->
+            <div x-show="!hasResults && !loading" class="grid grid-cols-1 md:grid-cols-2 gap-6 h-full items-center">
+                <!-- Archivo A (Original) -->
+                <div class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-white/10 hover:border-indigo-500/50 bg-white/5 hover:bg-white/10 rounded-xl transition-all group cursor-pointer relative h-[250px]">
+                    <input type="file" @change="handleFileA($event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".docx,.pdf,.md,.txt">
+                    <div class="text-center space-y-3">
+                        <div class="p-4 bg-white/5 rounded-full inline-block text-gray-400 group-hover:text-indigo-400 group-hover:scale-110 transition-all">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-200">Versión Original (A)</span>
+                            <span class="block text-xs text-gray-400 mt-1">Soporta .docx, .pdf, .md, .txt</span>
+                        </div>
+                        <div x-show="fileA" class="text-xs bg-indigo-500/20 text-indigo-300 py-1 px-3 rounded-full font-mono font-bold" x-text="fileA ? fileA.name : ''"></div>
+                    </div>
+                </div>
+
+                <!-- Archivo B (Modificado) -->
+                <div class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-white/10 hover:border-emerald-500/50 bg-white/5 hover:bg-white/10 rounded-xl transition-all group cursor-pointer relative h-[250px]">
+                    <input type="file" @change="handleFileB($event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".docx,.pdf,.md,.txt">
+                    <div class="text-center space-y-3">
+                        <div class="p-4 bg-white/5 rounded-full inline-block text-gray-400 group-hover:text-emerald-400 group-hover:scale-110 transition-all">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-200">Versión Modificada (B)</span>
+                            <span class="block text-xs text-gray-400 mt-1">Soporta .docx, .pdf, .md, .txt</span>
+                        </div>
+                        <div x-show="fileB" class="text-xs bg-emerald-500/20 text-emerald-300 py-1 px-3 rounded-full font-mono font-bold" x-text="fileB ? fileB.name : ''"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cargando -->
+            <div x-show="loading" class="flex flex-col items-center justify-center space-y-4 h-full py-12">
+                <div class="relative w-16 h-16">
+                    <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+                </div>
+                <div class="text-center">
+                    <p class="text-base font-semibold text-white">Procesando y analizando documentos...</p>
+                    <p class="text-xs text-gray-400 mt-1">Extrayendo texto y consultando a Gemini IA para evaluar impacto legal</p>
+                </div>
+            </div>
+
+            <!-- Resultados -->
+            <div x-show="hasResults && !loading" class="flex flex-col h-full space-y-4">
+                
+                <!-- Barra de Pestañas y Acciones -->
+                <div class="flex flex-wrap items-center justify-between border-b border-white/10 pb-3 gap-3">
+                    <div class="flex bg-white/5 p-1 rounded-lg border border-white/5">
+                        <button @click="activeTab = 'diff'" 
+                                :class="activeTab === 'diff' ? 'bg-indigo-600 text-white font-semibold' : 'text-gray-400 hover:text-white'"
+                                class="px-4 py-1.5 text-xs rounded-md transition-all">
+                            Comparación de Líneas
+                        </button>
+                        <button @click="activeTab = 'analysis'" 
+                                :class="activeTab === 'analysis' ? 'bg-indigo-600 text-white font-semibold' : 'text-gray-400 hover:text-white'"
+                                class="px-4 py-1.5 text-xs rounded-md transition-all">
+                            Análisis Legal Gemini
+                        </button>
+                    </div>
+                    
+                    <button @click="reset()" class="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Nueva Comparación
+                    </button>
+
+                    <!-- Botón: Copiar análisis como Markdown -->
+                    <button x-show="hasResults && activeTab === 'analysis'"
+                            @click="() => {
+                                const txt = [
+                                    '# Análisis Diff IA - STAR-DOC',
+                                    '**Nivel de Riesgo:** ' + results.analysis.nivel_riesgo,
+                                    '',
+                                    '## Resumen',
+                                    results.analysis.resumen_cambios || results.analysis.resumen_changes,
+                                    '',
+                                    '## Evaluación',
+                                    results.analysis.evaluacion_riesgo,
+                                    '',
+                                    '## Recomendaciones',
+                                    (results.analysis.recomendaciones || []).map((r,i) => (i+1)+'. '+r).join('\n')
+                                ].join('\n');
+                                navigator.clipboard.writeText(txt);
+                                if (window.showToast) showToast('Análisis copiado al portapapeles en formato Markdown', 'success');
+                            }"
+                            class="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors bg-cyan-500/10 px-3 py-1.5 rounded-lg border border-cyan-500/20">
+                        <i class="bi bi-clipboard-check"></i>
+                        Copiar reporte
+                    </button>
+                </div>
+
+                <!-- Pestaña 1: Comparación Visual de Líneas (HTML Diff) -->
+                <div x-show="activeTab === 'diff'" class="space-y-2">
+                    <div class="flex flex-wrap items-center justify-between text-xs text-gray-400 bg-white/5 px-4 py-2 rounded-lg font-mono gap-2">
+                        <span>Original: <strong class="text-indigo-400" x-text="results.filenames.original"></strong></span>
+                        <span class="text-gray-600">vs</span>
+                        <span>Modificado: <strong class="text-emerald-400" x-text="results.filenames.modified"></strong></span>
+                    </div>
+                    <!-- Leyenda de colores del diff -->
+                    <div class="flex flex-wrap items-center gap-3 px-1 text-[10px] text-gray-500">
+                        <span class="flex items-center gap-1">
+                            <span class="inline-block w-3 h-3 rounded-sm" style="background:rgba(46,160,67,0.25); border:1px solid rgba(46,160,67,0.4);"></span>
+                            Líneas añadidas
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="inline-block w-3 h-3 rounded-sm" style="background:rgba(255,59,48,0.25); border:1px solid rgba(255,59,48,0.4);"></span>
+                            Líneas eliminadas
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="inline-block w-3 h-3 rounded-sm" style="background:rgba(210,153,34,0.25); border:1px solid rgba(210,153,34,0.4);"></span>
+                            Líneas modificadas
+                        </span>
+                        <span class="flex items-center gap-1 ml-auto">
+                            <i class="bi bi-info-circle text-[11px]"></i>
+                            Haz clic en una línea para copiarla
+                        </span>
+                    </div>
+                    <!-- Contenedor del diff HTML -->
+                    <div x-html="results.html_diff" class="rounded-xl overflow-hidden border border-white/5"></div>
+                </div>
+
+                <!-- Pestaña 2: Análisis de Riesgos IA -->
+                <div x-show="activeTab === 'analysis'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Resumen Ejecutivo y Riesgo General (Columna Izquierda) -->
+                    <div class="lg:col-span-1 space-y-6">
+                        
+                        <!-- Panel de Riesgo -->
+                        <div :class="{
+                                'border-red-500/30 bg-red-500/5': results.analysis.nivel_riesgo === 'Alto',
+                                'border-amber-500/30 bg-amber-500/5': results.analysis.nivel_riesgo === 'Medio',
+                                'border-green-500/30 bg-green-500/5': results.analysis.nivel_riesgo === 'Bajo'
+                             }" 
+                             class="p-5 border rounded-xl space-y-3">
+                            <span class="text-xs uppercase tracking-wider font-semibold text-gray-400 block">Evaluación de Riesgo Global</span>
+                            
+                            <div class="flex items-center gap-3">
+                                <div :class="{
+                                        'bg-red-500 text-white': results.analysis.nivel_riesgo === 'Alto',
+                                        'bg-amber-500 text-white': results.analysis.nivel_riesgo === 'Medio',
+                                        'bg-green-500 text-white': results.analysis.nivel_riesgo === 'Bajo'
+                                     }" 
+                                     class="px-4 py-1.5 rounded-full font-bold text-sm tracking-wide"
+                                     x-text="results.analysis.nivel_riesgo">
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs leading-relaxed text-gray-300" x-text="results.analysis.evaluacion_riesgo"></p>
+                        </div>
+
+                        <!-- Resumen Cambios -->
+                        <div class="bg-white/5 p-5 rounded-xl border border-white/5 space-y-2">
+                            <span class="text-xs uppercase tracking-wider font-semibold text-gray-400 block">Resumen de Cambios</span>
+                            <p class="text-xs leading-relaxed text-gray-300" x-text="results.analysis.resumen_changes || results.analysis.resumen_cambios"></p>
+                        </div>
+                    </div>
+
+                    <!-- Cambios Detallados y Recomendaciones (Columna Derecha) -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Lista de Modificaciones -->
+                        <div class="bg-white/5 p-5 rounded-xl border border-white/5 space-y-4">
+                            <span class="text-xs uppercase tracking-wider font-semibold text-gray-400 block">Diferencias Críticas Detectadas</span>
+                            
+                            <div class="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
+                                <template x-for="(item, idx) in results.analysis.modificaciones_detectadas" :key="idx">
+                                    <div class="p-4 bg-black/30 border border-white/5 rounded-lg space-y-2">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <span class="text-xs font-bold text-white" x-text="item.seccion"></span>
+                                            <span :class="{
+                                                    'bg-red-500/10 text-red-400 border-red-500/20': item.riesgo === 'Alto',
+                                                    'bg-amber-500/10 text-amber-400 border-amber-500/20': item.riesgo === 'Medio',
+                                                    'bg-green-500/10 text-green-400 border-green-500/20': item.riesgo === 'Bajo'
+                                                 }" 
+                                                 class="px-2 py-0.5 text-[10px] font-bold rounded border uppercase"
+                                                 x-text="item.riesgo">
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-300 font-medium" x-text="item.descripcion"></p>
+                                        <p class="text-xs text-gray-400 leading-relaxed bg-white/5 p-2 rounded-md italic" x-text="item.implicacion_legal"></p>
+                                    </div>
+                                </template>
+                                <template x-if="!results.analysis.modificaciones_detectadas || results.analysis.modificaciones_detectadas.length === 0">
+                                    <p class="text-xs text-gray-400 italic">No se detectaron diferencias legales de alto impacto por la IA.</p>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Recomendaciones de Blindaje -->
+                        <div class="bg-white/5 p-5 rounded-xl border border-white/5 space-y-3">
+                            <span class="text-xs uppercase tracking-wider font-semibold text-gray-400 block">Sugerencias de Blindaje Legal</span>
+                            <ul class="list-disc list-inside space-y-1.5 pl-1">
+                                <template x-for="(rec, idx) in results.analysis.recomendaciones" :key="idx">
+                                    <li class="text-xs text-gray-300 leading-relaxed" x-text="rec"></li>
+                                </template>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Footer / Acciones -->
+        <div x-show="!hasResults && !loading" class="px-6 py-4 bg-white/5 border-t border-white/10 flex justify-end gap-3">
+            <button @click="closeModal()" class="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors bg-transparent hover:bg-white/5 rounded-lg">
+                Cancelar
+            </button>
+            <button @click="runComparison()" 
+                    :disabled="!fileA || !fileB" 
+                    :class="(!fileA || !fileB) ? 'opacity-50 cursor-not-allowed bg-indigo-600/50' : 'bg-indigo-600 hover:bg-indigo-500 hover:scale-105'" 
+                    class="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Ejecutar Comparación con IA
+            </button>
+        </div>
+
+    </div>
+</div>

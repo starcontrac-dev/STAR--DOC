@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticación de Seguridad - Star-Doc</title>
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        .glass-panel {
+            background: rgba(13, 16, 35, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .otp-input:focus {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-black/35 backdrop-blur-xl border-b border-white/5 py-4 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-600 rounded-lg shadow-indigo-500/20 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-base font-extrabold tracking-tight uppercase bg-gradient-to-r from-indigo-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">Star-Doc OTP</h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold font-mono">Doble Factor de Autenticación</p>
+            </div>
+        </div>
+        <div class="text-xs bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-gray-400">
+            Seguridad Avanzada (2FA)
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md p-5 sm:p-8 md:p-10 rounded-3xl shadow-2xl flex flex-col space-y-6 mx-auto">
+            
+            <div class="text-center space-y-2">
+                <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Verificación de Identidad</h2>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Para visualizar y firmar el documento <strong class="text-indigo-400 font-mono break-all">{{ document_filename }}</strong>, hemos enviado un código OTP de 6 dígitos al correo:
+                </p>
+                <div class="mt-2 inline-block px-3 py-1 bg-white/5 border border-white/5 rounded-lg text-xs sm:text-sm text-gray-300 font-medium break-all max-w-full">
+                    {{ signer_email }}
+                </div>
+            </div>
+
+            <!-- OTP Input Form -->
+            <form id="otp-form" class="space-y-6">
+                <!-- 6 Inputs individuales para el OTP -->
+                <div class="flex justify-center items-center gap-1.5 sm:gap-2 md:gap-3 py-4 w-full">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input flex-1 h-12 sm:h-14 md:h-16 max-w-[46px] text-center text-xl sm:text-2xl font-extrabold bg-[#111429] border border-white/10 rounded-xl focus:outline-none transition-all text-white" required>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input flex-1 h-12 sm:h-14 md:h-16 max-w-[46px] text-center text-xl sm:text-2xl font-extrabold bg-[#111429] border border-white/10 rounded-xl focus:outline-none transition-all text-white" required>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input flex-1 h-12 sm:h-14 md:h-16 max-w-[46px] text-center text-xl sm:text-2xl font-extrabold bg-[#111429] border border-white/10 rounded-xl focus:outline-none transition-all text-white" required>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input flex-1 h-12 sm:h-14 md:h-16 max-w-[46px] text-center text-xl sm:text-2xl font-extrabold bg-[#111429] border border-white/10 rounded-xl focus:outline-none transition-all text-white" required>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input flex-1 h-12 sm:h-14 md:h-16 max-w-[46px] text-center text-xl sm:text-2xl font-extrabold bg-[#111429] border border-white/10 rounded-xl focus:outline-none transition-all text-white" required>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input flex-1 h-12 sm:h-14 md:h-16 max-w-[46px] text-center text-xl sm:text-2xl font-extrabold bg-[#111429] border border-white/10 rounded-xl focus:outline-none transition-all text-white" required>
+                </div>
+
+                <div id="otp-error" class="text-red-400 text-xs font-semibold text-center hidden"></div>
+
+                <!-- Botón de Verificación -->
+                <button type="submit" id="verify-btn" 
+                        class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 hover:scale-[1.01] active:scale-95 text-white text-xs sm:text-sm font-bold rounded-2xl transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Verificar Código de Seguridad
+                </button>
+            </form>
+
+            <div class="divider border-t border-white/5 my-2"></div>
+
+            <!-- Panel de Reenvío OTP -->
+            <div class="flex flex-col items-center justify-center space-y-2">
+                <span class="text-xs text-gray-500">¿No recibió el correo electrónico?</span>
+                <button type="button" id="resend-btn" 
+                        class="text-xs text-indigo-400 hover:text-indigo-300 font-bold transition-colors disabled:text-gray-600 disabled:cursor-not-allowed">
+                    Reenviar código OTP (60s)
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/35 backdrop-blur-xl border-t border-white/5 py-4 px-6 text-center text-xs text-gray-500">
+        Star-Doc LegalTech Platform &copy; 2026. Conforme con la Ley 527 de 1999 de Comercio Electrónico de Colombia.
+    </footer>
+
+    <!-- Script de Interactividad OTP -->
+    <script>
+        const token = "{{ token }}";
+        const otpInputs = document.querySelectorAll(".otp-input");
+        const otpForm = document.getElementById("otp-form");
+        const verifyBtn = document.getElementById("verify-btn");
+        const resendBtn = document.getElementById("resend-btn");
+        const otpError = document.getElementById("otp-error");
+
+        // 1. Efecto de auto-salto entre los inputs del OTP
+        otpInputs.forEach((input, index) => {
+            input.addEventListener("input", (e) => {
+                // Filtrar solo números
+                input.value = input.value.replace(/[^0-9]/g, "");
+
+                if (input.value && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && !input.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+
+            // Evitar pegar caracteres inválidos
+            input.addEventListener("paste", (e) => {
+                e.preventDefault();
+                const pasteData = e.clipboardData.getData("text").trim().replace(/[^0-9]/g, "");
+                
+                if (pasteData.length === 6) {
+                    otpInputs.forEach((inp, idx) => {
+                        inp.value = pasteData[idx] || "";
+                    });
+                    otpInputs[5].focus();
+                }
+            });
+        });
+
+        // Foco inicial en el primer cuadro
+        otpInputs[0].focus();
+
+        // 2. Control de Reenvío OTP con Cuenta Atrás
+        let cooldown = 0;
+        let timerInterval = null;
+
+        function startCooldown(seconds) {
+            cooldown = seconds;
+            resendBtn.disabled = true;
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                cooldown--;
+                resendBtn.innerText = `Reenviar código OTP (${cooldown}s)`;
+                if (cooldown <= 0) {
+                    clearInterval(timerInterval);
+                    resendBtn.disabled = false;
+                    resendBtn.innerText = "Reenviar código de seguridad";
+                }
+            }, 1000);
+        }
+
+        async function triggerRequestOTP(isInitial = false) {
+            try {
+                if (!isInitial) {
+                    resendBtn.disabled = true;
+                    resendBtn.innerText = "Enviando...";
+                }
+
+                const response = await fetch(`/sign/${token}/request-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || "Error al solicitar OTP.");
+                }
+
+                if (!isInitial) {
+                    showToastMessage("Código OTP reenviado con éxito.", "success");
+                }
+                startCooldown(60);
+            } catch (error) {
+                console.error("Error al solicitar OTP:", error);
+                showError(error.message);
+                resendBtn.disabled = false;
+                resendBtn.innerText = "Reenviar código de seguridad";
+            }
+        }
+
+        resendBtn.addEventListener("click", () => triggerRequestOTP(false));
+
+        // Solicitar OTP automáticamente al cargar la página por primera vez
+        triggerRequestOTP(true);
+
+        // 3. Enviar y Verificar OTP
+        otpForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            otpError.classList.add("hidden");
+
+            // Recopilar los 6 dígitos
+            let otpValue = "";
+            otpInputs.forEach(input => {
+                otpValue += input.value;
+            });
+
+            if (otpValue.length !== 6) {
+                showError("Por favor complete los 6 dígitos del código.");
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            verifyBtn.innerText = "Verificando...";
+
+            try {
+                const response = await fetch(`/sign/${token}/verify-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ otp: otpValue })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || "Error en la verificación del OTP.");
+                }
+
+                // Autenticado con éxito: Recargar página para acceder a la interfaz de firma
+                window.location.reload();
+            } catch (error) {
+                console.error("Error verificando OTP:", error);
+                showError(error.message);
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Verificar Código de Seguridad
+                `;
+                // Limpiar inputs al fallar y enfocar el primero
+                otpInputs.forEach(input => input.value = "");
+                otpInputs[0].focus();
+            }
+        });
+
+        function showError(message) {
+            otpError.innerText = message;
+            otpError.classList.remove("hidden");
+        }
+
+        function showToastMessage(message, type) {
+            const toast = document.createElement("div");
+            toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-xl text-white text-xs font-bold transition-all transform translate-y-10 opacity-0 duration-300 z-50 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove("translate-y-10", "opacity-0");
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add("translate-y-10", "opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

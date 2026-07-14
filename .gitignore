@@ -1,0 +1,101 @@
+# ============================================
+# 🛡️ STAR-DOC — .gitignore Profesional
+# Sistema de Inteligencia Legal con IA
+# ============================================
+
+# --- CREDENCIALES Y SECRETOS (¡CRÍTICO!) ---
+.env
+.env.*
+!.env.example
+credentials.json
+credentials_calendar.json
+client_secret_*.json
+users.json
+*.pem
+*.key
+
+# --- DATOS SENSIBLES ---
+memory*.jsonl
+templates.json
+notebooklm-config.json
+star-doc.log
+*.log
+
+# --- PYTHON ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.cache/
+htmlcov/
+.coverage
+.coverage.*
+*.egg-info/
+dist/
+build/
+*.egg
+
+# --- ENTORNOS VIRTUALES ---
+venv/
+env/
+leg/
+.venv/
+
+# --- DOCKER (archivos locales) ---
+Dockerfile
+docker-compose.yml
+docker-compose*.yml
+
+# --- IDE / EDITORES ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- HERRAMIENTAS DE AGENTE / IA ---
+.gemini/
+.gemini_security/
+.agent/
+.agents/
+.genkit/
+.playwright-mcp/
+chrome_profile_notebooklm/
+
+# --- CARPETAS PRIVADAS / MARKETING ---
+archivado/
+planes/
+narracion/
+linkedin/
+embudo/
+scratch/
+
+# --- ARCHIVOS GENERADOS ---
+output/
+static/starcontract.mp4
+static/img/assets_backup/
+plantillas/temp/
+plantillas/*.bak
+plantillas/temp_*.docx.bak
+
+# --- DATOS DE COMPLIANCE (archivos pesados OFAC/UN) ---
+data/compliance/
+
+# --- SCRIPTS DE DEPURACIÓN EN RAÍZ ---
+check_db_templates.py
+create_admin_user.py
+
+# --- DOCUMENTOS DE AGENTE EN RAÍZ ---
+walkthrough.md
+pytest.ini
+
+# --- TESTS ---
+tests/
+test/
+
+# --- NODE MODULES (si se instalan) ---
+node_modules/
+package-lock.json

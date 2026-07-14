@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Documento Firmado Exitosamente - Star-Doc</title>
+    <style>
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .mobile-padding {
+                padding: 24px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!--[if mso]>
+                <table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+                <tr>
+                <td>
+                <![endif]-->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" class="email-container" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
+                    
+                    <!-- HEADER -->
+                    <tr>
+                        <td align="center" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 20px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Star-Doc</h1>
+                            <p style="margin: 6px 0 0; font-size: 14px; color: #a7f3d0; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;">Proceso de Firma Completado</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- CONTENT BODY -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 40px; background-color: #ffffff;">
+                            <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 700; color: #0f172a;">¡Hola!</h2>
+                            
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Le notificamos formalmente que el proceso de firma del documento <strong>{{ document_name }}</strong> ha concluido de manera exitosa y ha sido cerrado criptográficamente.
+                            </p>
+                            
+                            <!-- SECURITY AND IPFS METADATA CARD -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border: 1px solid #d1fae5; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #10b981;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.025em;">Criptografía e Integridad Criptográfica</h3>
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 13px; font-weight: 700; color: #15803d; width: 30%; vertical-align: top;">Firmado por:</td>
+                                                <td style="padding-bottom: 10px; font-size: 13px; color: #374151; width: 70%;">{{ signed_by }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 13px; font-weight: 700; color: #15803d; width: 30%; vertical-align: top;">ID IPFS (CID):</td>
+                                                <td style="font-size: 13px; color: #374151; width: 70%; word-break: break-all;">
+                                                    <a href="https://gateway.pinata.cloud/ipfs/{{ ipfs_cid }}" target="_blank" style="color: #10b981; text-decoration: underline; font-family: monospace; font-weight: 600;">{{ ipfs_cid }}</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                El contrato ha sido inmovilizado y archivado criptográficamente en la red descentralizada IPFS, garantizando el principio de no repudio y que el documento electrónico no sufrirá alteraciones futuras de ninguna índole.
+                            </p>
+
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Puede descargar la copia oficial del PDF firmado a través del siguiente botón:
+                            </p>
+
+                            <!-- BUTTON -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="text-align: center; margin: 32px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                            <tr>
+                                                <td align="center" style="background-color: #059669; border-radius: 10px;">
+                                                    <a href="{{ download_url }}" target="_blank" style="display: inline-block; padding: 14px 30px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px; border: 1px solid #059669;">Descargar PDF Firmado</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- FOOTER & LEGAL DISCLAIMER -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; line-height: 1.6; color: #94a3b8; text-align: justify;">
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center; font-weight: 600; font-size: 12px; color: #64748b;">
+                                &copy; 2026 Star-Doc Legal Tech. Medellín, Colombia.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center;">
+                                Notificación oficial e inmutable del proceso de firmas electrónicas Star-Doc.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 8px;">
+                                <strong>VALIDEZ DE LA FIRMA ELECTRÓNICA (LEY 527 DE 1999):</strong> Este documento ha sido suscrito mediante el uso de firmas electrónicas, las cuales gozan de plena equivalencia funcional y fuerza probatoria en la República de Colombia bajo la Ley 527 de 1999 y el Decreto Reglamentario 2364 de 2012. El mecanismo de firma implementado por Star-Doc garantiza la identificación inequívoca de las partes firmantes y la integridad absoluta del texto contractual.
+                            </p>
+                            <p style="margin: 0;">
+                                <strong>CONSERVACIÓN DE ARCHIVO (ART. 12 LEY 527 DE 1999):</strong> Para dar cumplimiento a los requisitos de conservación de archivos electrónicos, se ha almacenado una copia fiel del documento y su bitácora técnica de firmas en el Merkle DAG de la red IPFS, asegurando su accesibilidad inmutable para su posterior consulta judicial o comercial.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <!--[if mso]>
+                </td>
+                </tr>
+                </table>
+                <![endif]-->
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

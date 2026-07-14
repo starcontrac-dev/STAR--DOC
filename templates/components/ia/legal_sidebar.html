@@ -1,0 +1,245 @@
+<!-- Sidebar de Análisis Legal y Lector de Documentos -->
+<aside class="legal-sidebar fixed top-0 right-0 h-full flex flex-col shadow-2xl text-white overflow-hidden"
+       :class="{'open': sidebarOpen}">
+    <!-- Cabecera y Tabs -->
+    <div class="p-5 border-b border-white/10 flex flex-col gap-4 bg-slate-950/70 backdrop-blur-xl">
+        <div class="flex items-center justify-between">
+            <h2 class="text-md font-extrabold flex items-center gap-2 tracking-wide text-white">
+                <span class="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </span>
+                Panel Contextual
+            </h2>
+            <button @click="sidebarOpen = false" class="text-gray-400 hover:text-white p-1 hover:bg-white/5 rounded-lg transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Selector de Pestañas (Tabs) -->
+        <div class="flex p-0.5 bg-slate-900/90 rounded-xl border border-white/5">
+            <button type="button" @click="sidebarTab = 'auditoria'"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                :class="sidebarTab === 'auditoria' ? 'bg-indigo-600/90 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                Auditoría Legal
+            </button>
+            <button type="button" @click="sidebarTab = 'documento'"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 relative cursor-pointer"
+                :class="sidebarTab === 'documento' ? 'bg-indigo-600/90 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Lector de Contexto
+                <!-- Badge de Notificación si hay Adjunto -->
+                <span x-show="currentAttachment" class="absolute top-1 right-2 flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenido del Sidebar -->
+    <div class="flex-1 overflow-y-auto p-5 custom-scrollbar bg-slate-950/20">
+        
+        <!-- PESTAÑA: AUDITORÍA LEGAL -->
+        <div x-show="sidebarTab === 'auditoria'" class="space-y-6">
+            <template x-if="!legalAnalysis">
+                <div class="flex flex-col items-center justify-center py-20 text-center px-4">
+                    <!-- Estado: Cargando Análisis con IA -->
+                    <div class="flex flex-col items-center space-y-6 animate-fade-in-up" x-show="legalAnalysisLoading">
+                        <div class="relative w-16 h-16">
+                            <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                            <div class="absolute inset-0 rounded-full border-4 border-t-indigo-500 animate-spin"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-xs font-black text-indigo-400 uppercase tracking-widest animate-pulse">Analizando contrato...</p>
+                            <p class="text-[11px] text-gray-400 max-w-[240px]">Buscando cláusulas abusivas, validando vigencia de leyes y evaluando riesgos bajo normas colombianas.</p>
+                        </div>
+                    </div>
+
+                    <!-- Estado: Espera Inicial -->
+                    <div class="flex flex-col items-center space-y-4 opacity-60" x-show="!legalAnalysisLoading">
+                        <div class="p-4 bg-indigo-500/10 rounded-full text-indigo-400 border border-indigo-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-300">Auditoría no iniciada</p>
+                            <p class="text-xs text-gray-400 max-w-[220px] mt-1">Escribe o usa el comando <code class="text-indigo-400 font-bold">/riesgos</code> con un documento adjunto para evaluar riesgos contractuales.</p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="legalAnalysis">
+                <div class="space-y-6 animate-fade-in-up">
+                    <!-- Score de Salud -->
+                    <div class="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex flex-col items-center text-center">
+                        <span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-4">Salud Contractual</span>
+                        <div class="relative flex items-center justify-center">
+                            <svg class="w-28 h-28 transform -rotate-90">
+                                <circle cx="56" cy="56" r="50" stroke="currentColor" stroke-width="7" fill="transparent" class="text-white/5" />
+                                <circle cx="56" cy="56" r="50" stroke="currentColor" stroke-width="7" fill="transparent" 
+                                        :stroke-dasharray="2 * Math.PI * 50"
+                                        :stroke-dashoffset="(2 * Math.PI * 50) * (1 - (legalAnalysis.salud_contractual?.score || 0) / 100)"
+                                        :class="getScoreColor(legalAnalysis.salud_contractual?.score)"
+                                        class="score-circle" />
+                            </svg>
+                            <span class="absolute text-2xl font-black" x-text="(legalAnalysis.salud_contractual?.score || 0) + '%'"></span>
+                        </div>
+                        <p class="mt-4 font-bold text-sm" :class="getScoreColor(legalAnalysis.salud_contractual?.score, 'text')" x-text="legalAnalysis.salud_contractual?.estado || 'Analizando...'"></p>
+                    </div>
+
+                    <!-- Cláusulas Abusivas / Alertas -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-indigo-400 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                            Riesgos y Cláusulas Críticas
+                        </h3>
+                        <div class="space-y-2">
+                            <template x-for="riesgo in legalAnalysis.riesgos_detallados" :key="riesgo.clausula">
+                                <div class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-extrabold text-red-400 text-xs truncate max-w-[200px]" x-text="riesgo.clausula" :title="riesgo.clausula"></span>
+                                        <span class="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" x-text="riesgo.severidad"></span>
+                                    </div>
+                                    <p class="text-xs text-gray-300 leading-relaxed" x-text="riesgo.riesgo"></p>
+                                    <div class="pt-2 flex items-start gap-1.5 border-t border-white/5">
+                                        <i class="bi bi-shield-check text-xs text-emerald-400"></i>
+                                        <span class="text-[10px] text-emerald-300/80 leading-relaxed font-medium" x-text="'Mitigación: ' + riesgo.mitigacion"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Mapa de Normatividad -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-blue-400 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                            Cumplimiento Legal
+                        </h3>
+                        <div class="grid grid-cols-1 gap-2">
+                            <template x-for="norma in legalAnalysis.mapa_normatividad" :key="norma.entidad">
+                                <div class="bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl flex items-center justify-between">
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="text-xs font-extrabold text-blue-300" x-text="norma.entidad"></span>
+                                        <span class="text-[10px] text-gray-400" x-text="norma.contexto || 'Norma aplicable'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-md"
+                                              :class="norma.estado === 'Vigente' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-amber-500/20 text-amber-400 border border-amber-500/20'"
+                                              x-text="norma.estado"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Documentos Relacionados -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                            Precedente y RAG Cruzado
+                        </h3>
+                        <div class="space-y-2">
+                            <template x-for="rel in legalAnalysis.documentos_relacionados" :key="rel.document_id">
+                                <div class="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl hover:bg-emerald-500/10 transition-colors cursor-pointer group flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <i class="bi bi-file-earmark-text text-emerald-400"></i>
+                                        <span class="text-xs text-gray-300 group-hover:text-white truncate max-w-[180px]" x-text="rel.filename" :title="rel.filename"></span>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-emerald-400" x-text="Math.round(rel.score * 100) + '% similitud'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- PESTAÑA: VISOR DE DOCUMENTO ACTIVO -->
+        <div x-show="sidebarTab === 'documento'" class="space-y-6 h-full flex flex-col">
+            <template x-if="!currentAttachment">
+                <div class="flex flex-col items-center justify-center py-20 text-center px-4 space-y-5">
+                    <div class="p-4 bg-indigo-500/10 rounded-full text-indigo-400 border border-indigo-500/20 animate-pulse">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-sm text-gray-200">No hay documento activo</h4>
+                        <p class="text-xs text-gray-400 max-w-[220px] mt-1 leading-relaxed">Sube un contrato tradicional o escanea un documento con la cámara (OCR) para leer su contenido aquí.</p>
+                    </div>
+                    <div class="flex flex-col gap-2 w-full max-w-[200px]">
+                        <button type="button" @click="$refs.ocrFileInput.click()" 
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5">
+                            <i class="bi bi-camera-fill text-xs"></i>
+                            Escanear con OCR
+                        </button>
+                        <button type="button" @click="$refs.fileInput.click()" 
+                            class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-gray-300 font-bold text-xs rounded-xl border border-white/5 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5">
+                            <i class="bi bi-file-earmark-arrow-up text-xs"></i>
+                            Adjuntar Archivo
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="currentAttachment">
+                <div class="flex flex-col h-full space-y-4 animate-fade-in-up">
+                    <!-- Cabecera del Archivo -->
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10 flex flex-col gap-2 relative">
+                        <span class="text-[9px] uppercase tracking-widest text-indigo-400 font-extrabold">Documento en Contexto</span>
+                        <div class="flex items-start justify-between gap-2">
+                            <h4 class="font-bold text-xs text-white leading-relaxed truncate max-w-[240px]" 
+                                :title="currentAttachment.name"
+                                x-text="currentAttachment.name"></h4>
+                            <button type="button" @click="currentAttachment = null; sidebarOpen = false" 
+                                class="text-[10px] text-red-400 hover:text-red-300 font-bold cursor-pointer"
+                                title="Quitar este documento del contexto de conversación">
+                                Quitar
+                            </button>
+                        </div>
+                        <!-- Estadísticas Rápidas -->
+                        <div class="flex items-center gap-3 pt-2 border-t border-white/5 text-[10px] text-gray-400">
+                            <span>Caracteres: <strong class="text-gray-200" x-text="currentAttachment.text.length"></strong></span>
+                            <span>Tipo: <strong class="text-gray-200" x-text="currentAttachment.name.startsWith('OCR:') ? 'Imagen OCR' : 'Texto RAG'"></strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción sobre el texto -->
+                    <div class="flex gap-2">
+                        <button type="button" @click="copyToClipboard(currentAttachment.text); showStatus('Texto copiado al portapapeles', 'green', 2000)" 
+                            class="flex-1 py-1.5 bg-slate-900 hover:bg-slate-800 text-gray-300 border border-white/5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="bi bi-clipboard-check text-xs"></i>
+                            Copiar Texto
+                        </button>
+                        <button type="button" @click="userInput = 'Resume este documento destacando plazos y partes en una tabla'; submitForm()" 
+                            class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="bi bi-chat-left-text text-xs"></i>
+                            Resumir en Chat
+                        </button>
+                    </div>
+
+                    <!-- Visor de Texto Completo -->
+                    <div class="flex-1 flex flex-col min-h-[300px]">
+                        <label class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Contenido Completo Extraído:</label>
+                        <div class="flex-1 bg-slate-950/80 border border-white/5 rounded-2xl p-4 overflow-y-auto custom-scrollbar font-mono text-[11px] text-gray-300 leading-relaxed whitespace-pre-wrap select-text h-[55vh]"
+                             x-text="currentAttachment.text">
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+    </div>
+</aside>

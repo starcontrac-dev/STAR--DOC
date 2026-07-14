@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Nueva Cita Agendada - Star-Doc</title>
+    <style>
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .mobile-padding {
+                padding: 24px !important;
+            }
+            .mobile-stack {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!--[if mso]>
+                <table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+                <tr>
+                <td>
+                <![endif]-->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" class="email-container" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
+                    
+                    <!-- HEADER -->
+                    <tr>
+                        <td align="center" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 20px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Star-Doc</h1>
+                            <p style="margin: 6px 0 0; font-size: 14px; color: #a7f3d0; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;">Control y Agenda Jurídica</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- CONTENT BODY -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 40px; background-color: #ffffff;">
+                            <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 700; color: #0f172a;">Estimado Abogado,</h2>
+                            
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Se ha confirmado y agendado una nueva asesoría jurídica directamente en su calendario y flujo de trabajo de Star-Doc:
+                            </p>
+                            
+                            <!-- LEAD & APPOINTMENT CARD -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border: 1px solid #d1fae5; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #10b981;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #047857; width: 35%; vertical-align: top;">Cliente/Lead:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; color: #0f172a; width: 65%;">{{ name }} (<a href="mailto:{{ email }}" style="color: #2563eb; text-decoration: none;">{{ email }}</a>)</td>
+                                            </tr>
+                                            {% if phone %}
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #047857; width: 35%; vertical-align: top;">Teléfono:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; color: #0f172a; width: 65%;">{{ phone }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #047857; width: 35%; vertical-align: top;">Fecha:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #0f172a; width: 65%;">{{ date }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #047857; width: 35%; vertical-align: top;">Hora:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #0f172a; width: 65%;">{{ time }} (Hora Colombia)</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #047857; width: 35%; vertical-align: top;">Tipo de Asesoría:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; color: #0f172a; width: 65%;">{{ type }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #047857; width: 35%; vertical-align: top;">Motivo:</td>
+                                                <td style="font-size: 14px; color: #334155; width: 65%;">{{ reason }}</td>
+                                            </tr>
+                                            {% if meeting_link %}
+                                            <tr>
+                                                <td style="font-size: 14px; font-weight: 700; color: #047857; width: 35%; vertical-align: top;">Videollamada:</td>
+                                                <td style="font-size: 14px; width: 65%;"><a href="{{ meeting_link }}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Unirse a Google Meet</a></td>
+                                            </tr>
+                                            {% endif %}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Esta reunión ha sido sincronizada automáticamente en su Google Calendar corporativo y el cliente ha recibido su correspondiente confirmación junto con los datos de acceso.
+                            </p>
+
+                            <!-- BUTTON -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="text-align: center; margin: 32px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                            <tr>
+                                                <td align="center" style="background-color: #10b981; border-radius: 10px;">
+                                                    <a href="{{ meeting_link or 'http://localhost:8000/dashboard' }}" target="_blank" style="display: inline-block; padding: 14px 30px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px; border: 1px solid #10b981;">Acceder al Dashboard / Reunión</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- FOOTER & LEGAL DISCLAIMER -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; line-height: 1.6; color: #94a3b8; text-align: justify;">
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center; font-weight: 600; font-size: 12px; color: #64748b;">
+                                &copy; 2026 Star-Doc Legal Tech. Medellín, Colombia.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center;">
+                                Notificación interna del sistema de agendamiento Star-Doc. Prohibida su divulgación externa.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 8px;">
+                                <strong>DEBER DE SECRETO PROFESIONAL Y CUSTODIA (LEY 1123 DE 2007):</strong> Se le recuerda al profesional del derecho que la información recopilada en este mensaje, así como la identidad y los datos de contacto del solicitante, se encuentran estrictamente cobijados por el secreto profesional (Art. 74 de la Constitución Política de Colombia) y las normativas éticas del ejercicio de la abogacía en Colombia. Su deber como abogado comprende el almacenamiento seguro y el tratamiento confidencial de estos datos personales de conformidad con la Ley 1581 de 2012.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <!--[if mso]>
+                </td>
+                </tr>
+                </table>
+                <![endif]-->
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

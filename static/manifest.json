@@ -1,0 +1,66 @@
+{
+  "name": "STAR-DOC Suite Legal",
+  "short_name": "STAR-DOC",
+  "description": "Sistema de Inteligencia Legal de Grado Empresarial",
+  "id": "/home",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "categories": ["legal", "productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Asistente Legal IA",
+      "short_name": "Asistente IA",
+      "description": "Iniciar chat interactivo con Luka, tu copiloto legal inteligente",
+      "url": "/ia",
+      "icons": [
+        {
+          "src": "/static/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Verificar Documento",
+      "short_name": "Verificar",
+      "description": "Validar la integridad criptográfica y firmas de un contrato",
+      "url": "/verify",
+      "icons": [
+        {
+          "src": "/static/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/static/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-192x192-maskable.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-512x512-maskable.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

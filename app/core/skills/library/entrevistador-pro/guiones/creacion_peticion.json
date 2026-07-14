@@ -1,0 +1,25 @@
+{
+  "fases": [
+    {
+      "nombre": "Fase 1: Partes e Información Básica",
+      "preguntas": [
+        "1. ¿Cuál es tu nombre completo, número de cédula, dirección física y correo electrónico de contacto?",
+        "2. ¿A qué entidad o empresa pública/privada va dirigido el derecho de petición?"
+      ]
+    },
+    {
+      "nombre": "Fase 2: Solicitud y Razones",
+      "preguntas": [
+        "1. ¿Qué estás solicitando concretamente? (ej: entrega de copias de la historia clínica, estado de un trámite, reubicación de un poste).",
+        "2. ¿Cuáles son las razones o motivos de hecho por los cuales estás solicitando esto?"
+      ]
+    },
+    {
+      "nombre": "Fase 3: Documentos Adjuntos",
+      "preguntas": [
+        "1. ¿Deseas anexar o aportar algún documento soporte con la petición? (Si es así, lístalos)."
+      ]
+    }
+  ],
+  "consejo_IA": "El derecho de petición en Colombia no requiere formalidades extremas, pero debe ser sumamente claro en el objeto."
+}

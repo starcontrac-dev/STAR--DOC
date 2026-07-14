@@ -1,0 +1,26 @@
+{
+  "fases": [
+    {
+      "nombre": "Fase 1: Datos del Expediente y Notificación",
+      "preguntas": [
+        "1. ¿Cuál es el número de radicado del proceso de tutela y ante qué Juzgado se tramita?",
+        "2. ¿Quién figura como Accionante (demandante) y quién como Accionado (tu entidad o representado)?"
+      ]
+    },
+    {
+      "nombre": "Fase 2: Pronunciamiento sobre los Hechos",
+      "preguntas": [
+        "1. Respecto a los hechos expuestos por el accionante, ¿cuáles son ciertos, cuáles no y cuáles no te constan?",
+        "2. ¿Se corrigió o solucionó ya la situación denunciada por el accionante antes de recibir esta tutela? (Clave para alegar hecho superado)."
+      ]
+    },
+    {
+      "nombre": "Fase 3: Argumentos de Defensa y Pruebas",
+      "preguntas": [
+        "1. ¿Qué razones legales o técnicas justifican la actuación de la entidad? (ej. el medicamento solicitado no fue ordenado por médico adscrito, o no hay competencias legales).",
+        "2. ¿Qué pruebas documentales se van a aportar para sustentar la defensa?"
+      ]
+    }
+  ],
+  "consejo_IA": "Recuerda mantener el tono forense formal y estructurar las excepciones de forma clara."
+}

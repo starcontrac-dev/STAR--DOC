@@ -1,0 +1,75 @@
+{
+  "variables": {
+    "tipo_persona_contratante": {
+      "type": "select",
+      "label": "Tipo de Persona (Contratante)",
+      "options": ["Persona Natural", "Persona Jurídica"]
+    },
+    "rep_legal_contratante": {
+      "type": "text",
+      "label": "Representante Legal (Contratante)",
+      "placeholder": "Nombre del representante legal",
+      "depends_on": {
+        "variable": "tipo_persona_contratante",
+        "equals": "Persona Jurídica"
+      }
+    },
+    "tipo_persona_contratista": {
+      "type": "select",
+      "label": "Tipo de Persona (Contratista)",
+      "options": ["Persona Natural", "Persona Jurídica"]
+    },
+    "rep_legal_contratista": {
+      "type": "text",
+      "label": "Representante Legal (Contratista)",
+      "placeholder": "Nombre del representante legal",
+      "depends_on": {
+        "variable": "tipo_persona_contratista",
+        "equals": "Persona Jurídica"
+      }
+    },
+    "descripcion_servicios": {
+      "type": "textarea",
+      "label": "Descripción detallada de los servicios",
+      "placeholder": "Escribe detalladamente las actividades y entregables..."
+    },
+    "fecha_inicio": {
+      "type": "date",
+      "label": "Fecha de inicio del contrato"
+    },
+    "fecha_fin": {
+      "type": "date",
+      "label": "Fecha de finalización del contrato"
+    },
+    "email_contratante": {
+      "type": "email",
+      "label": "Correo electrónico de notificaciones (Contratante)",
+      "placeholder": "ejemplo@contratante.com"
+    },
+    "email_contratista": {
+      "type": "email",
+      "label": "Correo electrónico de notificaciones (Contratista)",
+      "placeholder": "ejemplo@contratista.com"
+    },
+    "valor_total_numeros": {
+      "type": "number",
+      "label": "Valor total en números ($)"
+    },
+    "valor_cuota_numeros": {
+      "type": "number",
+      "label": "Valor cuota mensual en números ($)"
+    },
+    "duracion_meses": {
+      "type": "number",
+      "label": "Duración en meses"
+    },
+    "meses_confidencialidad": {
+      "type": "number",
+      "label": "Meses adicionales de confidencialidad"
+    },
+    "porcentaje_penal_numeros": {
+      "type": "number",
+      "label": "Porcentaje cláusula penal (%)"
+    }
+  }
+}

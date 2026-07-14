@@ -1,0 +1,148 @@
+<!-- Modal de Edición Colaborativa en la Nube con CryptPad.fr -->
+<div id="colab_nube_modal"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md z-[1100] flex items-center justify-center hidden"
+    style="opacity: 0; transition: opacity 0.3s ease;"
+    @click="if($event.target===document.getElementById('colab_nube_modal')) closeColabNubeModal()">
+
+    <!-- Tarjeta del Modal -->
+    <div class="bg-slate-950 border border-white/10 w-[95%] max-w-lg rounded-2xl shadow-2xl shadow-cyan-950/20 flex flex-col overflow-hidden relative transform scale-95 transition-transform duration-300 ease-out text-white"
+        id="colab-modal-card">
+
+        <!-- Header -->
+        <div class="bg-white/5 border-b border-white/10 p-4 flex justify-between items-center shrink-0">
+            <h3 class="font-bold text-sm sm:text-base text-white flex items-center gap-2">
+                <div class="p-1.5 bg-cyan-500/20 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                Co-Edición en la Nube
+            </h3>
+            <button onclick="closeColabNubeModal()"
+                class="text-gray-400 hover:bg-white/10 hover:text-white p-1.5 rounded-lg transition-colors focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar text-sm">
+            
+            <!-- PANEL 1: VINCULAR SALA COLABORATIVA (SECCIÓN VINCULACIÓN) -->
+            <div id="colab-link-panel" class="space-y-3">
+                <div class="bg-cyan-500/10 border border-cyan-500/20 p-3.5 rounded-xl">
+                    <h4 class="text-xs font-bold text-cyan-400 uppercase tracking-wide">Paso 1: Configurar Sala de Edición</h4>
+                    <p class="text-[11px] text-gray-300 mt-1 leading-relaxed font-sans">
+                        Hemos abierto CryptPad.fr en una nueva pestaña. Por políticas de privacidad y cifrado Zero-Knowledge, la sala se abre inicialmente en blanco.
+                    </p>
+                    <p class="text-[11px] text-gray-350 mt-1.5 leading-relaxed font-sans shadow-sm" id="colab-instructions-text">
+                        Hemos copiado el texto del contrato en tu portapapeles de forma automática.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-2 mt-2.5">
+                        <button type="button" id="colab-btn-copy" onclick="copiarBorradorAlPortapapelesManual(event)"
+                            class="flex-1 bg-slate-900/60 hover:bg-slate-900 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 font-bold py-1.5 px-3 rounded-lg text-[10px] flex items-center justify-center gap-1.5 transition-all active:scale-95 font-sans">
+                            📋 Copiar al Portapapeles
+                        </button>
+                        <button type="button" id="colab-btn-download" onclick="descargarBorradorLocal(event)"
+                            class="flex-1 bg-slate-900/60 hover:bg-slate-900 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 font-bold py-1.5 px-3 rounded-lg text-[10px] flex items-center justify-center gap-1.5 transition-all active:scale-95 font-sans"
+                            title="Descargar el borrador para importarlo en CryptPad">
+                            📥 Descargar Borrador
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ADVERTENCIA DE COPIADO DESDE BARRA DE DIRECCIONES -->
+                <div class="bg-amber-500/10 border border-amber-500/25 p-3.5 rounded-xl flex items-start gap-2.5">
+                    <div class="p-1 bg-amber-500/20 text-amber-400 rounded-lg shrink-0 mt-0.5 animate-pulse">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="text-[10.5px] text-amber-200/90 leading-normal font-sans">
+                        <strong class="text-amber-400">⚠️ ¡NO uses el enlace de la barra de direcciones del navegador!</strong><br/>
+                        Por razones de cifrado y seguridad de CryptPad, esa dirección oculta la clave secreta y no servirá para tus contactos. 
+                        En la pestaña de CryptPad, haz clic en el botón <strong class="text-white">Compartir</strong> (esquina superior derecha), copia el <strong class="text-white">Enlace de edición</strong> y pégalo abajo.
+                    </div>
+                </div>
+                
+                <div class="space-y-1.5">
+                    <label for="colab-url-input" class="text-xs font-semibold text-gray-400 font-sans">Enlace colaborativo de CryptPad (obtenido de Compartir):</label>
+                    <input type="url" id="colab-url-input" 
+                        placeholder="https://cryptpad.fr/pad/#/3/pad/edit/59aa0cc0b10e3e2505af4e..."
+                        class="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-white/10 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 text-white font-sans">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="colab-emails-input" class="text-xs font-semibold text-gray-400 font-sans">Invitar colaboradores por correo electrónico (separados por comas - Opcional):</label>
+                    <input type="text" id="colab-emails-input" 
+                        placeholder="colega@ejemplo.com, socio@ejemplo.com"
+                        class="w-full px-3 py-2 text-xs rounded-xl bg-slate-900 border border-white/10 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 text-white font-sans">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="colab-message-input" class="text-xs font-semibold text-gray-400 font-sans">Mensaje personalizado en la invitación (Opcional):</label>
+                    <textarea id="colab-message-input" 
+                        placeholder="Hola colega, adjunto el enlace de CryptPad para que co-editemos el contrato..."
+                        class="w-full h-14 px-3 py-2 text-xs rounded-xl bg-slate-900 border border-white/10 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 text-white font-sans resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button id="colab-btn-link" onclick="linkNubeCollaboration()"
+                        class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-black font-bold py-2 rounded-xl text-xs transition-all active:scale-[0.98] shadow-md shadow-cyan-950/20 font-sans">
+                        🔗 Guardar, Vincular e Invitar
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 2: FINALIZAR Y CONSOLIDAR CONTRATO (SECCIÓN CARGA) -->
+            <div id="colab-finalize-panel" class="space-y-4 hidden">
+                <div class="bg-purple-500/10 border border-purple-500/20 p-3.5 rounded-xl">
+                    <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wide">Paso de Consolidación</h4>
+                    <p class="text-[11px] text-gray-300 mt-1 leading-relaxed font-sans">
+                        Sigue estas instrucciones para consolidar los cambios en STAR-DOC de forma segura:
+                    </p>
+                    <ul class="text-[10px] text-gray-400 mt-2 list-decimal list-inside space-y-1 font-sans">
+                        <li>Ve a la pestaña activa de CryptPad.fr.</li>
+                        <li>En el menú superior, selecciona <span class="text-white font-semibold">Archivo</span> y luego <span class="text-white font-semibold">Exportar</span>.</li>
+                        <li>Descarga el archivo correspondiente (<span class="text-cyan-400">.md</span> o <span class="text-cyan-400">.docx</span>).</li>
+                        <li>Arrastra o selecciona el archivo descargado en la zona inferior para compilarlo a PDF y cerrar la colaboración.</li>
+                    </ul>
+                </div>
+
+                <!-- Dropzone de Archivo -->
+                <div id="colab-drag-zone" 
+                    class="border-2 border-dashed border-white/20 hover:border-purple-500/40 rounded-2xl p-6 text-center cursor-pointer transition-all bg-white/5 flex flex-col items-center justify-center space-y-2 group"
+                    onclick="document.getElementById('colab-file-input').click()">
+                    
+                    <input type="file" id="colab-file-input" class="hidden" accept=".md,.docx" onchange="handleColabFileSelected(event)">
+                    
+                    <div class="p-2.5 bg-purple-500/15 text-purple-400 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-300">Arrastra aquí tu archivo exportado</span>
+                    <span class="text-[10px] text-gray-500">Admite archivos .md y .docx</span>
+                    <span id="colab-selected-filename" class="text-[11px] text-purple-400 font-bold hidden font-sans mt-2"></span>
+                </div>
+
+                <!-- Botón de Consolidación -->
+                <button id="colab-btn-finalize" onclick="finalizeNubeCollaboration()"
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-xl text-xs transition-all active:scale-[0.98] shadow-md shadow-purple-950/20"
+                    disabled>
+                    💾 Subir y Consolidar Contrato
+                </button>
+            </div>
+
+            <!-- Loader Spinner de Conversión PDF -->
+            <div id="colab-loader" class="hidden flex flex-col items-center justify-center p-6 space-y-3 shrink-0">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                <p class="text-xs text-purple-400 font-semibold font-sans">Compilando contrato colaborativo y generando PDF...</p>
+                <p class="text-[10px] text-gray-500 text-center">Esto puede tardar unos segundos mientras extraemos el texto y procesamos los formatos.</p>
+            </div>
+
+        </div>
+    </div>
+</div>

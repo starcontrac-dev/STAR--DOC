@@ -1,0 +1,100 @@
+<!-- ============================================================ -->
+<!-- SECCIÓN: AGENDA DE CITAS (Solo Admin) -->
+<!-- ============================================================ -->
+<div id="appointments-section" class="hidden">
+    <div class="divider text-primary font-mono text-sm opacity-50 my-8">📅 AGENDA DE CITAS</div>
+
+    <!-- KPIs de Citas -->
+    <div id="appointments-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stats shadow glass-card text-white">
+            <div class="stat p-3">
+                <div class="stat-figure text-blue-400"><i class="bi bi-calendar-event text-2xl"></i></div>
+                <div class="stat-title text-base-content/70 text-xs">Total Citas</div>
+                <div class="stat-value text-blue-400 text-2xl" id="stat-appointments-total">0</div>
+            </div>
+        </div>
+        <div class="stats shadow glass-card text-white">
+            <div class="stat p-3">
+                <div class="stat-figure text-amber-400"><i class="bi bi-hourglass-split text-2xl"></i></div>
+                <div class="stat-title text-base-content/70 text-xs">Pendientes</div>
+                <div class="stat-value text-amber-400 text-2xl" id="stat-appointments-pending">0</div>
+            </div>
+        </div>
+        <div class="stats shadow glass-card text-white">
+            <div class="stat p-3">
+                <div class="stat-figure text-emerald-400"><i class="bi bi-check-circle text-2xl"></i></div>
+                <div class="stat-title text-base-content/70 text-xs">Confirmadas</div>
+                <div class="stat-value text-emerald-400 text-2xl" id="stat-appointments-confirmed">0</div>
+            </div>
+        </div>
+        <div class="stats shadow glass-card text-white">
+            <div class="stat p-3">
+                <div class="stat-figure text-violet-400"><i class="bi bi-people text-2xl"></i></div>
+                <div class="stat-title text-base-content/70 text-xs">Leads</div>
+                <div class="stat-value text-violet-400 text-2xl" id="stat-leads-total">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Citas -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Columna Principal: Tabla de Citas -->
+        <div id="appt-table-col" class="lg:col-span-2 card glass-panel shadow-xl border border-white/5">
+            <div class="card-body p-5">
+                <h3 class="card-title text-white text-sm flex items-center gap-2 mb-4">
+                    <i class="bi bi-calendar3 text-blue-400"></i> Próximas Citas Programadas
+                    <span class="badge badge-sm badge-primary ml-auto" id="appointments-badge">0</span>
+                </h3>
+                <div id="appointments-list" class="space-y-3 max-h-[520px] overflow-y-auto scrollbar-thin pr-1">
+                    <div class="flex items-center justify-center py-8">
+                        <span class="loading loading-spinner loading-md text-primary"></span>
+                        <span class="text-gray-500 ml-3 text-sm">Cargando citas...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Lateral: Leads Activos -->
+        <div id="leads-sidebar-col" class="card glass-panel shadow-xl border border-white/5">
+            <div class="card-body p-5">
+                <h3 class="card-title text-white text-sm flex items-center gap-2 mb-4">
+                    <i class="bi bi-person-lines-fill text-violet-400"></i> Leads Activos
+                </h3>
+                <div id="leads-list" class="space-y-2 max-h-[520px] overflow-y-auto scrollbar-thin">
+                    <p class="text-gray-500 text-xs text-center py-4">Cargando leads...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Reprogramar Cita -->
+<dialog id="rescheduleModal" class="modal">
+    <div class="modal-box glass-panel text-white border border-white/10 max-w-sm">
+        <h3 class="font-bold text-lg text-primary flex items-center gap-2 mb-4">
+            <i class="bi bi-calendar-range"></i> Reprogramar Cita
+        </h3>
+        <p class="text-xs text-gray-400 mb-4">
+            Cita con: <span id="reschedule-client-name" class="font-bold text-white"></span>
+        </p>
+        <form id="reschedule-form" method="dialog" class="space-y-4" onsubmit="event.preventDefault(); submitReschedule();">
+            <input type="hidden" id="reschedule-appointment-id" />
+            
+            <div class="form-control">
+                <label class="label"><span class="label-text text-gray-300 text-xs">Nueva Fecha</span></label>
+                <input type="date" id="reschedule-date" class="input input-bordered bg-black/20 focus:border-accent text-sm" required />
+            </div>
+
+            <div class="form-control">
+                <label class="label"><span class="label-text text-gray-300 text-xs">Nueva Hora</span></label>
+                <input type="time" id="reschedule-time" class="input input-bordered bg-black/20 focus:border-accent text-sm" required />
+            </div>
+
+            <div class="modal-action flex justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('rescheduleModal').close();" class="btn btn-sm btn-ghost">Cancelar</button>
+                <button type="submit" id="btn-submit-reschedule" class="btn btn-sm btn-primary bg-gradient-to-r from-primary to-accent border-none text-white">Guardar</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Solicitud de Firma Electrónica - Star-Doc</title>
+    <style>
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .mobile-padding {
+                padding: 24px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!--[if mso]>
+                <table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+                <tr>
+                <td>
+                <![endif]-->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" class="email-container" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
+                    
+                    <!-- HEADER -->
+                    <tr>
+                        <td align="center" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 40px 20px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Star-Doc</h1>
+                            <p style="margin: 6px 0 0; font-size: 14px; color: #ddd6fe; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;">Plataforma de Firma Electrónica Segura</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- CONTENT BODY -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 40px; background-color: #ffffff;">
+                            <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 700; color: #0f172a;">Hola, {{ signer_name }}</h2>
+                            
+                            <p style="margin-top: 0; margin-bottom: 16px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Se ha solicitado formalmente su firma electrónica para el documento: <strong>{{ document_name }}</strong>.
+                            </p>
+                            
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Este proceso de firma electrónica es 100% vinculante en Colombia de conformidad con la <strong>Ley 527 de 1999 (Comercio Electrónico)</strong> y el Decreto Reglamentario 2364 de 2012, otorgando plena equivalencia funcional y fuerza probatoria respecto de la firma manuscrita tradicional.
+                            </p>
+
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Para revisar el documento legal y estampar su firma, por favor haga clic en el botón a continuación:
+                            </p>
+
+                            <!-- BUTTON -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="text-align: center; margin: 32px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                            <tr>
+                                                <td align="center" style="background-color: #7c3aed; border-radius: 10px; box-shadow: 0 4px 6px rgba(124, 58, 237, 0.25);">
+                                                    <a href="{{ sign_url }}" target="_blank" style="display: inline-block; padding: 14px 30px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px; border: 1px solid #7c3aed;">Revisar y Firmar Documento</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- SECURITY CARD -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; border-left: 3px solid #7c3aed; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 18px; font-size: 13px; line-height: 1.5; color: #64748b;">
+                                        <strong>Nota de seguridad e integridad:</strong> Este enlace de acceso es personal, intransferible y posee un límite temporal de expiración. Por motivos de seguridad y para conformar la bitácora probatoria de la transacción electrónica, el sistema de Star-Doc registrará de forma automática metadatos técnicos críticos tales como su dirección IP, marcas temporales en formato UTC, características de su dispositivo/navegador y el hash de integridad criptográfica (SHA-256) del documento.
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- FOOTER & LEGAL DISCLAIMER -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; line-height: 1.6; color: #94a3b8; text-align: justify;">
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center; font-weight: 600; font-size: 12px; color: #64748b;">
+                                &copy; 2026 Star-Doc Legal Tech. Medellín, Colombia.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center;">
+                                Mensaje transaccional generado bajo la solicitud y autorización de las partes firmantes en Star-Doc.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 8px;">
+                                <strong>VALIDEZ Y FUERZA PROBATORIA (LEY 527 DE 1999):</strong> Las firmas electrónicas en Colombia gozan del principio de neutralidad tecnológica y equivalencia funcional. El artículo 7 de la Ley 527 de 1999 establece que cuando se requiera la firma de una persona, este requisito se entenderá satisfecho con un mensaje de datos si se utiliza un método confiable para identificar al firmante y para indicar su aprobación.
+                            </p>
+                            <p style="margin: 0;">
+                                <strong>PROTECCIÓN DE DATOS (HABEAS DATA):</strong> Los datos recopilados en el proceso se tratan con la finalidad exclusiva de dotar de plena validez jurídica a la transacción contractual, de conformidad con la Ley 1581 de 2012. Puede consultar nuestra política de tratamiento de datos en el portal web oficial.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <!--[if mso]>
+                </td>
+                </tr>
+                </table>
+                <![endif]-->
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

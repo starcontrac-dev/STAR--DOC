@@ -1,0 +1,103 @@
+<!-- Widget de Firma Electrónica Integrada (Star-Doc 2026) -->
+<div x-data="signatureWidget" class="card bg-indigo-950/20 border border-indigo-500/10 rounded-2xl p-5 space-y-4 shadow-lg backdrop-blur-md">
+    <!-- Indicador de firma electrónica activa para el backend -->
+    <input type="hidden" name="signature_workflow_enabled" :value="enabled ? 'true' : 'false'">
+    
+    <!-- Entrada oculta para que Jinja pase los firmantes locales -->
+    {% if detected_signers is not none %}
+    <input type="hidden" id="detected-signers-raw" value='{{ detected_signers | tojson }}'>
+    {% endif %}
+
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-600/10 text-indigo-400 rounded-xl border border-indigo-500/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold text-white uppercase tracking-wider">Firma Electrónica Digital</h4>
+                <p class="text-[11px] text-indigo-300/80">Despachar firmas automáticamente tras la generación</p>
+            </div>
+        </div>
+        <input type="checkbox" class="toggle toggle-primary toggle-sm border-indigo-500/30" x-model="enabled" />
+    </div>
+
+    <!-- Contenido del Widget (Solo si está habilitado) -->
+    <div x-show="enabled" x-transition class="space-y-3 pt-2 border-t border-white/5">
+        
+        <!-- Firmantes Detectados de Variables -->
+        <template x-if="signers.length > 0">
+            <div class="space-y-3">
+                <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-400 block mb-1">Firmantes Detectados en la Plantilla</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <template x-for="(s, index) in signers" :key="index">
+                        <div class="p-3 bg-black/40 border border-white/5 rounded-xl space-y-1.5 text-xs text-left">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-white flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+                                    <span x-text="s.role"></span>
+                                </span>
+                                <span class="text-[10px] font-mono" :class="s.name_var && s.email_var ? 'text-indigo-400/80' : 'text-amber-400/80'" x-text="s.name_var && s.email_var ? 'Vinculado' : 'Manual'"></span>
+                            </div>
+                            <div class="space-y-2 pt-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-gray-400 shrink-0">Nombre:</span>
+                                    <template x-if="s.name_var">
+                                        <span class="text-gray-200 font-semibold truncate max-w-[120px]" x-text="s.name || '(en formulario)'"></span>
+                                    </template>
+                                    <template x-if="!s.name_var">
+                                        <input type="text" x-model="s.name" placeholder="Nombre completo" class="input input-xs input-bordered bg-black/40 focus:border-accent w-full max-w-[120px] text-gray-200" required />
+                                    </template>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-gray-400 shrink-0">Correo:</span>
+                                    <template x-if="s.email_var">
+                                        <span class="text-gray-300 font-mono truncate max-w-[120px]" x-text="s.email || '(en formulario)'"></span>
+                                    </template>
+                                    <template x-if="!s.email_var">
+                                        <input type="email" x-model="s.email" placeholder="correo@dominio.com" class="input input-xs input-bordered bg-black/40 focus:border-accent w-full max-w-[120px] text-gray-300 font-mono" required />
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Firmantes Manuales -->
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-400">Firmantes Adicionales</span>
+                <button type="button" @click="addManualSigner()" class="btn btn-xs btn-outline btn-primary gap-1 normal-case font-semibold">
+                    <i class="bi bi-plus-lg text-[10px]"></i> Añadir Manual
+                </button>
+            </div>
+            
+            <div class="space-y-2">
+                <template x-for="(ms, index) in manualSigners" :key="index">
+                    <div class="flex flex-wrap items-center gap-2 p-3 bg-black/30 border border-white/5 rounded-xl relative group">
+                        <div class="form-control flex-1 min-w-[150px]">
+                            <input type="text" x-model="ms.name" placeholder="Nombre completo" class="input input-xs input-bordered bg-black/40 focus:border-accent" required />
+                        </div>
+                        <div class="form-control flex-1 min-w-[150px]">
+                            <input type="email" x-model="ms.email" placeholder="correo@dominio.com" class="input input-xs input-bordered bg-black/40 focus:border-accent" required />
+                        </div>
+                        <button type="button" @click="removeManualSigner(index)" class="btn btn-xs btn-ghost text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Indicador de envío -->
+        <div class="p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-start gap-2.5 text-left">
+            <i class="bi bi-info-circle-fill text-indigo-400 text-sm mt-0.5"></i>
+            <span class="text-[10px] leading-relaxed text-indigo-300/80">
+                Al habilitar esta opción, al hacer clic en "Generar Documento" el sistema creará automáticamente la solicitud de firma y enviará las invitaciones digitales con sellado inmutable en IPFS.
+            </span>
+        </div>
+    </div>
+</div>

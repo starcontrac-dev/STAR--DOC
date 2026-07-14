@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Alerta: Vencimiento de Documento - Star-Doc</title>
+    <style>
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .mobile-padding {
+                padding: 24px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!--[if mso]>
+                <table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+                <tr>
+                <td>
+                <![endif]-->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" class="email-container" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
+                    
+                    <!-- HEADER -->
+                    <tr>
+                        <td align="center" style="background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%); padding: 40px 20px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Star-Doc</h1>
+                            <p style="margin: 6px 0 0; font-size: 14px; color: #ffedd5; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;">Alertas de Control y Riesgo Legal</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- CONTENT BODY -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 40px; background-color: #ffffff;">
+                            <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 700; color: #0f172a;">Estimado Abogado,</h2>
+                            
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Le notificamos que, según la extracción de metadatos de nuestra IA y el calendario de control de vencimientos, el siguiente documento está próximo a expirar:
+                            </p>
+                            
+                            <!-- EXPIRATION DETAILS CARD -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fff7ed; border: 1px solid #ffedd5; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #ea580c;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #c2410c; width: 35%; vertical-align: top;">Documento:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #0f172a; width: 65%;">{{ document_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #c2410c; width: 35%; vertical-align: top;">Cliente/Parte:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; color: #334155; width: 65%;">{{ client_name or 'No especificado' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #c2410c; width: 35%; vertical-align: top;">Vencimiento:</td>
+                                                <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #dc2626; width: 65%;">{{ expiration_date }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; font-weight: 700; color: #c2410c; width: 35%; vertical-align: top;">Tiempo Restante:</td>
+                                                <td style="font-size: 18px; font-weight: 800; color: #dc2626; width: 65%;">{{ days_left }} días</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin-top: 0; margin-bottom: 24px; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Le recomendamos encarecidamente revisar las cláusulas de renovación automática o preaviso de terminación con el fin de ejercer las acciones correspondientes (prórrogas, preavisos formales de terminación o inicio de negociaciones de renovación) de forma oportuna.
+                            </p>
+
+                            <!-- BUTTON -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="text-align: center; margin: 32px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                            <tr>
+                                                <td align="center" style="background-color: #ea580c; border-radius: 10px;">
+                                                    <a href="http://localhost:8000/dashboard" target="_blank" style="display: inline-block; padding: 14px 30px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px; border: 1px solid #ea580c;">Ver Panel de Vencimientos</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- FOOTER & LEGAL DISCLAIMER -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; line-height: 1.6; color: #94a3b8; text-align: justify;">
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center; font-weight: 600; font-size: 12px; color: #64748b;">
+                                &copy; 2026 Star-Doc Legal Tech. Medellín, Colombia.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 12px; text-align: center;">
+                                Notificación interna confidencial generada automáticamente por Star-Doc.
+                            </p>
+                            <p style="margin-top: 0; margin-bottom: 8px;">
+                                <strong>DEBER DE DEBIDA DILIGENCIA PROFESIONAL:</strong> La gestión preventiva de vencimientos contractuales es un pilar fundamental en la debida diligencia del abogado y del asesor de riesgos corporativos en Colombia. La inactividad ante un vencimiento puede dar lugar a prórrogas automáticas indeseadas o pérdida de derechos sustanciales (Art. 1602 y subsiguientes del Código Civil colombiano). El contenido de este mensaje es confidencial y amparado bajo el secreto profesional.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <!--[if mso]>
+                </td>
+                </tr>
+                </table>
+                <![endif]-->
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

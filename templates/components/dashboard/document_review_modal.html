@@ -1,0 +1,132 @@
+<!-- Modal de Auditoría y Revisión de Documentos Pendientes -->
+<!-- Componente: components/dashboard/document_review_modal.html -->
+<!-- Se abre desde la bandeja de contratos pendientes del Dashboard Admin -->
+
+<dialog id="docReviewModal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box w-11/12 max-w-5xl glass-panel border border-white/10 p-0 max-h-[90vh] flex flex-col">
+        
+        <!-- Cabecera del Modal -->
+        <div class="px-6 pt-6 pb-4 border-b border-white/10 shrink-0">
+            <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="bi bi-file-earmark-lock2 text-amber-400 text-lg"></i>
+                        <h3 class="font-bold text-lg text-white truncate" id="review-modal-filename">Documento</h3>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 text-[11px] text-gray-400">
+                        <span class="flex items-center gap-1">
+                            <i class="bi bi-person"></i>
+                            <span id="review-modal-author">-</span>
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <i class="bi bi-calendar3"></i>
+                            <span id="review-modal-date">-</span>
+                        </span>
+                        <span id="review-modal-status-badge" class="badge badge-sm badge-warning">Pendiente</span>
+                    </div>
+                </div>
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost text-gray-400 hover:text-white hover:bg-white/10">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cuerpo: Previsualización del Documento -->
+        <div class="flex-1 overflow-y-auto px-6 py-4" id="review-modal-body">
+            <!-- Indicador de carga -->
+            <div id="review-modal-loader" class="flex flex-col items-center justify-center py-16">
+                <span class="loading loading-spinner loading-lg text-primary"></span>
+                <p class="text-gray-500 text-sm mt-3 font-mono">Cargando documento para auditoría...</p>
+            </div>
+
+            <!-- Contenido del Documento -->
+            <div id="review-modal-content" class="hidden">
+                <div class="mb-4">
+                    <h4 class="text-xs font-mono text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <i class="bi bi-file-text"></i> Contenido del Documento
+                    </h4>
+                    <div id="review-modal-text" 
+                         class="bg-white/[0.03] border border-white/5 rounded-xl p-5 max-h-[40vh] overflow-y-auto scrollbar-thin
+                                text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words"
+                         style="font-family: 'Merriweather', Georgia, serif; line-height: 1.8;">
+                    </div>
+                </div>
+
+                <!-- Metadatos del Documento -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <div class="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Estado</p>
+                        <p class="text-sm font-semibold text-amber-400" id="review-modal-status-text">Pendiente</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Caracteres</p>
+                        <p class="text-sm font-semibold text-cyan-400" id="review-modal-chars">0</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">ID Documento</p>
+                        <p class="text-sm font-semibold text-purple-400 font-mono" id="review-modal-id">-</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Autor ID</p>
+                        <p class="text-sm font-semibold text-blue-400 font-mono" id="review-modal-user-id">-</p>
+                    </div>
+                </div>
+
+                <!-- Comentarios Existentes (si los hay) -->
+                <div id="review-modal-existing-comments" class="hidden mb-4">
+                    <h4 class="text-xs font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <i class="bi bi-chat-dots"></i> Comentarios Previos
+                    </h4>
+                    <div id="review-modal-prev-comments" 
+                         class="bg-blue-500/5 border border-blue-500/10 rounded-lg p-3 text-sm text-blue-300 italic">
+                    </div>
+                </div>
+
+                <!-- Área de Comentarios de Auditoría -->
+                <div class="mb-2">
+                    <h4 class="text-xs font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <i class="bi bi-pencil-square"></i> Comentarios de Auditoría
+                        <span class="text-gray-600 normal-case tracking-normal font-sans">(obligatorio para rechazar)</span>
+                    </h4>
+                    <textarea id="review-modal-comments" 
+                              class="textarea textarea-bordered w-full bg-white/[0.03] border-white/10 text-gray-200 placeholder-gray-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/30 resize-none"
+                              rows="3"
+                              placeholder="Escriba sus observaciones de auditoría, sugerencias o motivos de rechazo..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer: Acciones de Revisión -->
+        <div class="px-6 py-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 shrink-0 bg-base-300/30">
+            <div class="flex items-center gap-2 text-[10px] text-gray-600 font-mono">
+                <i class="bi bi-shield-lock"></i>
+                <span>Auditoría Senior — STAR-DOC Governance</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-ghost text-gray-400">Cancelar</button>
+                </form>
+                <button id="review-modal-reject-btn" 
+                        class="btn btn-sm btn-error text-white gap-1 hover:brightness-110 transition-all"
+                        onclick="submitReviewFromModal('reject')">
+                    <i class="bi bi-x-circle"></i> Rechazar
+                </button>
+                <button id="review-modal-approve-btn" 
+                        class="btn btn-sm btn-success text-white gap-1 hover:brightness-110 transition-all"
+                        onclick="submitReviewFromModal('approve')">
+                    <i class="bi bi-check-circle"></i> Aprobar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Backdrop para cerrar el modal al hacer clic fuera -->
+    <form method="dialog" class="modal-backdrop">
+        <button>Cerrar</button>
+    </form>
+</dialog>
+
+<!-- Variable oculta para almacenar el ID del documento en revisión -->
+<input type="hidden" id="review-modal-doc-id" value="">

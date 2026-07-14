@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Star-Doc{% endblock %}
+{% set hide_sidebar = True %}
+
+{% block background_media %}
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <video autoplay muted loop playsinline class="absolute min-w-full min-h-full object-cover opacity-40">
+        <source src="/static/starcontract.mp4" type="video/mp4">
+    </video>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-60"></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh]">
+    <div class="card w-full max-w-md glass-panel shadow-2xl">
+        <div class="card-body p-8">
+            <div class="text-center mb-6">
+                <div class="mb-4 flex flex-col items-center">
+                    <a href="/" class="transition-transform duration-300 hover:scale-110">
+                        <img src="/static/favicon.ico" alt="StarContract Logo"
+                            class="w-16 h-16 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                    </a>
+                </div>
+                <h2 class="text-3xl font-bold font-mono tracking-tight text-white">Bienvenido</h2>
+                <p class="text-base-content/60 mt-2">Inicia sesión en tu espacio de trabajo legal</p>
+            </div>
+
+            <form id="login-form" class="flex flex-col gap-4">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Usuario</span>
+                    </label>
+                    <input type="text" id="username" name="username" placeholder="usuario"
+                        class="input input-bordered bg-black/20 focus:border-primary" required autofocus />
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Contraseña</span>
+                    </label>
+                    <input type="password" id="password" name="password" placeholder="••••••••"
+                        class="input input-bordered bg-black/20 focus:border-primary" required />
+                    <label class="label">
+                        <a href="/forgot-password" class="label-text-alt link link-primary no-underline hover:underline">¿Olvidaste tu contraseña?</a>
+                    </label>
+                </div>
+
+                <div id="error-container"></div>
+
+                <div class="form-control mt-4">
+                    <button type="submit"
+                        class="btn btn-primary bg-gradient-to-r from-primary to-secondary border-none hover:shadow-lg hover:shadow-primary/40 text-white">
+                        <span class="loading loading-spinner loading-sm hidden" id="login-spinner"></span>
+                        Ingresar
+                    </button>
+                </div>
+            </form>
+
+            <div class="divider opacity-20 text-sm text-base-content/60">O ingresa con</div>
+
+            <!-- Botón de Google Sign-In -->
+            <a href="/auth/google/login/start" 
+               class="btn btn-outline btn-block border-white/20 hover:bg-white/10 hover:border-white/40 text-base-content group flex items-center justify-center gap-3 transition-all mb-3 bg-[#0f1014]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span class="font-medium">Continuar con Google</span>
+            </a>
+
+            <!-- Autenticación externa -->
+
+            <button id="connect-wallet-btn"
+                class="btn btn-outline btn-block border-white/20 hover:bg-white/5 hover:border-white/40 text-base-content/80 group">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask"
+                    class="w-6 h-6 mr-2 transition-transform group-hover:scale-110">
+                Conectar Billetera Web3
+            </button>
+
+            <div class="text-center mt-6">
+                <p class="text-sm text-base-content/60">¿No tienes cuenta? <a href="/register-page"
+                        class="link link-primary no-underline hover:underline">Regístrate aquí</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" type="application/javascript"></script>
+<script>
+    const errorContainer = document.getElementById('error-container');
+    const connectButton = document.getElementById('connect-wallet-btn');
+
+    // Check for expired session param
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('expired') === 'true') {
+        setTimeout(() => showToast('Tu sesión ha expirado. Por favor ingresa nuevamente.', 'danger'), 500);
+        // Clean param from URL without reload
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Check for auth errors (e.g. from Google OAuth)
+    if (urlParams.get('error')) {
+        const errorMsg = urlParams.get('error') === 'google_auth_failed' 
+            ? 'Error al iniciar sesión con Google. Por favor, intenta de nuevo.' 
+            : 'Ocurrió un error en la autenticación.';
+        setTimeout(() => showToast(errorMsg, 'error'), 500);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Check for successful Google Login callback
+    if (urlParams.get('token') && urlParams.get('google_login') === 'success') {
+        const token = urlParams.get('token');
+        localStorage.setItem('access_token', token);
+        localStorage.removeItem('isWalletConnected');
+        showToast('Inicio de sesión exitoso con Google', 'success');
+        // Clean param from URL to avoid leaking token on sharing
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => window.location.href = '/home', 500);
+    }
+
+    // Login Form Handler
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const spinner = document.getElementById('login-spinner');
+
+        errorContainer.innerHTML = '';
+        submitButton.disabled = true;
+        spinner.classList.remove('hidden');
+
+        try {
+            const response = await fetch('/token', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.removeItem('isWalletConnected');
+                // Set Cookie for direct downloads (backend fallback)
+                document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
+                showToast('Inicio de sesión exitoso', 'success');
+                setTimeout(() => window.location.href = '/home', 500);
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Error de autenticación');
+            }
+        } catch (error) {
+            errorContainer.innerHTML = `
+                <div role="alert" class="alert alert-error text-sm py-2 mt-2 bg-error/10 text-error border-error/20">
+                    <i class="bi bi-x-circle"></i>
+                    <span>${error.message}</span>
+                </div>`;
+            submitButton.disabled = false;
+        } finally {
+            spinner.classList.add('hidden');
+        }
+    });
+
+    // Wallet Logic (Simplified from original for brevity, logic remains same)
+    async function connectWallet() {
+        errorContainer.innerHTML = '';
+        connectButton.disabled = true;
+        const originalContent = connectButton.innerHTML;
+        connectButton.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Conectando...';
+
+        try {
+            if (!window.ethereum) throw new Error("No se detectó billetera Web3.");
+
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const wallet_address = await signer.getAddress();
+
+            const msgRes = await fetch('/get-signature-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ wallet_address })
+            });
+            if (!msgRes.ok) throw new Error("Error obteniendo mensaje.");
+            const { message } = await msgRes.json();
+
+            const signature = await signer.signMessage(message);
+
+            const loginRes = await fetch('/login-wallet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ wallet_address, signature })
+            });
+
+            if (!loginRes.ok) throw new Error("Error en login con wallet.");
+
+            const tokenData = await loginRes.json();
+            localStorage.setItem('access_token', tokenData.access_token);
+            localStorage.setItem('isWalletConnected', 'true');
+            // Set Cookie for direct downloads
+            document.cookie = `access_token=${tokenData.access_token}; path=/; max-age=86400; SameSite=Lax`;
+            showToast('Billetera conectada', 'success');
+            window.location.href = '/home';
+
+        } catch (error) {
+            console.error(error);
+            showToast(error.message, 'error');
+            connectButton.disabled = false;
+            connectButton.innerHTML = originalContent;
+        }
+    }
+
+    connectButton.addEventListener('click', connectWallet);
+</script>
+{% endblock %}

@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // Capturar beforeinstallprompt de forma ultra-temprana para evitar problemas de sincronía
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+            window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+        });
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Star-Doc{% endblock %}</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+
+    <!-- PWA Config -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="STAR-DOC">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- TailwindCSS & DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+    <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['Space Grotesk', 'monospace'],
+                    },
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        accent: '#06b6d4',
+                        dark: '#0f172a',
+                        'dark-surface': '#1e293b'
+                    }
+                }
+            },
+            daisyui: {
+                themes: ["dark", "night", "luxury"],
+            }
+        }
+    </script>
+
+    <!-- Custom Styles (Glassmorphism) -->
+    <style>
+        body {
+            background-color: #050505;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(30, 41, 59, 0.55);
+            border-color: rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 12px 24px -10px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Menu Link Micro-animations */
+        .menu li a {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .menu li a:hover {
+            transform: scale(1.02) translateX(3px);
+            box-shadow: 0 4px 15px -3px rgba(59, 130, 246, 0.15);
+        }
+
+        .menu li a:active {
+            transform: scale(0.98);
+        }
+
+        /* HTMX Indicator */
+        .htmx-indicator {
+            display: none;
+        }
+
+        .htmx-request .htmx-indicator {
+            display: inline-block;
+        }
+
+        .htmx-request.htmx-indicator {
+            display: inline-block;
+        }
+
+        @keyframes spin-reverse {
+            to {
+                transform: rotate(-360deg);
+            }
+        }
+
+        .animate-spin-reverse {
+            animation: spin-reverse 1s linear infinite;
+        }
+
+        /* Sidebar Transitions & Core Styles */
+        /* Sidebar Transitions & Core Styles */
+        #app-sidebar {
+            /* Mobile: Compact width (w-80 = 20rem), not full screen */
+            width: 20rem;
+            min-height: 100vh;
+            max-width: 80vw;
+            /* Prevent overflow on very small screens */
+        }
+
+        /* DESKTOP ONLY LOGIC (Collapsing & Hover) */
+        @media (min-width: 1024px) {
+            #app-sidebar {
+                transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                width: 18rem;
+                /* w-72 default */
+            }
+
+            #app-sidebar.collapsed {
+                width: 5rem !important;
+                /* Force width override */
+            }
+
+            /* Only apply 'display:none' when collapsed AND NOT hovered */
+            #app-sidebar.collapsed:not(:hover) .nav-label,
+            #app-sidebar.collapsed:not(:hover) .logo-text,
+            #app-sidebar.collapsed:not(:hover) .user-info,
+            #app-sidebar.collapsed:not(:hover) .logout-text {
+                display: none;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            /* When Hovering a Collapsed Sidebar: Expand Width */
+            #app-sidebar.collapsed:hover {
+                width: 18rem !important;
+                z-index: 999;
+                /* Ensure it stays on top */
+            }
+
+            /* Show content on hover with transition */
+            #app-sidebar.collapsed:hover .nav-label,
+            #app-sidebar.collapsed:hover .logo-text,
+            #app-sidebar.collapsed:hover .user-info,
+            #app-sidebar.collapsed:hover .logout-text {
+                display: inline-block;
+                opacity: 1;
+                transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+            }
+
+            /* Fix Button alignment when collapsed but NOT hovered */
+            #app-sidebar.collapsed:not(:hover) .menu li a {
+                justify-content: center;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            #app-sidebar.collapsed:not(:hover) .logo-container {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+                width: 100%;
+            }
+
+            #app-sidebar.collapsed:not(:hover) .user-footer {
+                flex-direction: column;
+                align-items: center;
+                padding-top: 1rem;
+            }
+
+            #app-sidebar.collapsed:not(:hover) .user-info-container {
+                justify-content: center;
+                padding: 0;
+                margin-bottom: 0.5rem;
+            }
+
+            #app-sidebar.collapsed:not(:hover) #logout-btn {
+                justify-content: center;
+                padding: 0;
+                width: 3rem;
+                height: 3rem;
+                margin: 0 auto;
+            }
+
+            #app-sidebar.collapsed:not(:hover) #logout-btn div {
+                margin: 0;
+            }
+
+            /* Ocultar scrollbar al colapsar para evitar saltos visuales */
+            #app-sidebar.collapsed:not(:hover) .custom-scrollbar {
+                overflow: hidden !important;
+            }
+
+            /* Ensure drawer-side adjusts to the collapsed width */
+            .drawer.lg:drawer-open .drawer-side {
+                width: auto;
+                position: sticky;
+                top: 0;
+                height: 100%;
+            }
+        }
+
+        /* 🧘 MODO LITIGIO ZEN 🧘 */
+        body,
+        #app-sidebar,
+        .drawer-content,
+        main,
+        .drawer-side {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Modo Zen Activo */
+        body.zen-active #app-sidebar {
+            width: 0 !important;
+            max-width: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            border-right-width: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        body.zen-active .drawer.lg:drawer-open {
+            grid-template-columns: 1fr !important;
+        }
+
+        body.zen-active .drawer-side {
+            width: 0 !important;
+            max-width: 0 !important;
+            display: none !important;
+        }
+
+        /* Ocultar elementos de distracción */
+        body.zen-active .non-zen {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* Ajustes tipográficos para lectura jurídica premium */
+        body.zen-active .readable-text-container {
+            font-family: 'Merriweather', Georgia, Cambria, serif !important;
+            font-size: 1.125rem !important;
+            line-height: 1.85 !important;
+            max-width: 52rem !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            color: #e2e8f0 !important;
+        }
+
+        body.zen-active main {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 1.5rem !important;
+        }
+
+        /* Mostrar botón flotante en Modo Zen */
+        body.zen-active #zen-exit-float-btn {
+            display: inline-flex !important;
+        }
+
+        /* Ocultar barra móvil en Modo Zen */
+        body.zen-active .mobile-only-nav {
+            display: none !important;
+        }
+
+        /* --- Estilos Dinámicos para el Ajuste del Dock PWA en Móviles --- */
+        @media (max-width: 1023px) {
+            body.pwa-dock-hidden main {
+                padding-bottom: 1.5rem !important;
+                /* pb-6 */
+            }
+
+            #ia-pane {
+                height: calc(100dvh - 5rem) !important;
+            }
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+
+<body
+    class="bg-dark text-gray-100 {% if hide_sidebar %}min-h-screen overflow-x-hidden{% else %}h-screen overflow-hidden{% endif %} font-sans selection:bg-accent selection:text-white">
+
+    <!-- Toast Container (Fixed to bottom right via Tailwind to avoid top ghost space) -->
+    <div class="toast-container fixed bottom-0 right-0 p-4" style="z-index: 9999;"></div>
+
+    <!-- Global Loader -->
+    <div id="global-loader"
+        class="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="relative">
+            <div class="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+            <div
+                class="absolute top-0 left-0 w-16 h-16 border-4 border-secondary/30 border-b-secondary rounded-full animate-spin-reverse">
+            </div>
+        </div>
+        <p class="mt-4 text-white font-medium animate-pulse" id="loader-text">Procesando...</p>
+    </div>
+
+    {% if hide_sidebar %}
+    <!-- Layout for Login/Register (No Sidebar) -->
+    <main class="w-full min-h-screen bg-gradient-to-br from-dark via-dark-surface to-black relative">
+        <!-- Background Orbs -->
+        <div
+            class="fixed top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-[128px] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        </div>
+        <div
+            class="fixed bottom-0 right-0 w-96 h-96 bg-secondary/20 rounded-full blur-[128px] translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        </div>
+
+        {% block background_media %}{% endblock %}
+
+        <div class="relative z-10 w-full h-full">
+            {% else %}
+            <!-- Layout for App (With Sidebar) -->
+            <div class="drawer lg:drawer-open h-full">
+                <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
+
+                <div
+                    class="drawer-content flex flex-col relative bg-gradient-to-br from-dark via-dark-surface to-black h-full overflow-hidden">
+                    <!-- Mobile Nav (Hidden on Desktop) -->
+                    <div
+                        class="hidden lg:hidden w-full navbar bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5 mobile-only-nav">
+                        <style>
+                            @media (max-width: 1023px) {
+                                .mobile-only-nav {
+                                    display: flex !important;
+                                }
+                            }
+                        </style>
+                        <div class="flex-none">
+                            <label for="my-drawer-2" class="btn btn-square btn-ghost text-primary lg:hidden">
+                                <i class="bi bi-list text-2xl"></i>
+                            </label>
+                        </div>
+                        <div class="flex-1 px-2 mx-2">
+                            <span
+                                class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">STAR-DOC</span>
+                        </div>
+                        <div class="flex-none">
+                            <button onclick="toggleZenMode()"
+                                class="btn btn-square btn-ghost text-gray-400 hover:text-white"
+                                title="Modo Litigio Zen">
+                                <i class="bi bi-eye-slash zen-icon-global text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Content (Balanced vertical alignment) -->
+                    <main
+                        class="flex-1 p-2 pb-32 lg:pb-6 lg:p-4 lg:pt-6 overflow-y-auto relative z-10">
+                        <!-- Background Orbs -->
+                        <div
+                            class="fixed top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none">
+                        </div>
+                        {% endif %}
+
+                        <!-- COMMON CONTENT BLOCK -->
+                        {% block content %}{% endblock %}
+
+                        {% if hide_sidebar %}
+                </div> <!-- End of relative z-10 -->
+    </main>
+    {% else %}
+    </main>
+    </div>
+
+    <div class="drawer-side z-50">
+        <label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
+        <aside id="app-sidebar"
+            class="menu p-4 min-h-full bg-base-200/90 text-base-content backdrop-blur-xl border-r border-white/5 flex flex-col justify-between overflow-hidden z-50">
+            <!-- Top Container (Header & Links) -->
+            <div class="flex flex-col flex-1 min-h-0">
+                <!-- Header: Logo + Toggle -->
+                <div class="flex items-center justify-between mb-8 relative shrink-0">
+                    <a href="/" class="flex items-center gap-3 logo-container transition-all">
+                        <img src="/static/favicon.ico" alt="Logo"
+                            class="w-8 h-8 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                        <div class="logo-text transition-opacity duration-200">
+                            <h1 class="text-xl font-black italic tracking-tighter leading-none">
+                                <span
+                                    class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">STAR</span>
+                                <span class="text-white">-DOC</span>
+                            </h1>
+                        </div>
+                    </a>
+                    <!-- Toggle Btn -->
+                    <button id="sidebar-toggle" onclick="toggleSidebar()"
+                        class="btn btn-circle btn-xs btn-ghost absolute right-2 top-1/2 -translate-y-1/2 hover:bg-white/10 text-gray-400 hidden lg:flex z-50">
+                        <i class="bi bi-chevron-left" id="sidebar-toggle-icon"></i>
+                    </button>
+                </div>
+
+                <!-- Nav Links (Scrollable if viewport is too short) -->
+                <div class="flex-1 overflow-y-auto pr-1 space-y-2 select-none custom-scrollbar">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="/home?active_tab=ia"
+                                class="hover:bg-primary/20 hover:text-white {% if active_tab == 'ia' or not active_tab %}active bg-primary/20 text-white{% endif %} font-medium transition-all h-12 flex items-center">
+                                <i class="bi bi-robot text-xl"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Asistente IA</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/home?active_tab=manage"
+                                class="hover:bg-secondary/20 hover:text-white {% if active_tab == 'manage' %}active bg-secondary/20 text-white{% endif %}  font-medium transition-all h-12 flex items-center">
+                                <i class="bi bi-folder2-open text-xl"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Plantillas</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/home?active_tab=interactive"
+                                class="hover:bg-accent/20 hover:text-white {% if active_tab == 'interactive' %}active bg-accent/20 text-white{% endif %} font-medium transition-all h-12 flex items-center">
+                                <i class="bi bi-magic text-xl"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Generar Doc</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/home?active_tab=batch"
+                                class="hover:bg-success/20 hover:text-white {% if active_tab == 'batch' %}active bg-success/20 text-white{% endif %} font-medium transition-all h-12 flex items-center">
+                                <i class="bi bi-layers text-xl"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Lotes (Batch)</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/dashboard"
+                                class="hover:bg-info/20 hover:text-white {% if active_tab == 'dashboard' %}active bg-info/20 text-white{% endif %} font-medium transition-all h-12 flex items-center">
+                                <i class="bi bi-bar-chart-line-fill text-xl"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Stats & Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <button onclick="toggleZenMode()"
+                                class="hover:bg-accent/20 hover:text-white text-base-content/70 font-medium transition-all h-12 flex items-center w-full text-left justify-start">
+                                <i class="bi bi-eye-slash zen-icon-global text-xl"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Modo Litigio Zen</span>
+                            </button>
+                        </li>
+                        <li>
+                            <div class="divider my-1 opacity-20"></div>
+                        </li>
+                        <li>
+                            <a href="#" id="connect-google-btn"
+                                class="hover:bg-warning/10 hover:text-warning text-base-content/70 font-medium transition-all group h-12 flex items-center">
+                                <i class="bi bi-google text-xl group-hover:text-warning transition-colors"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Conectar Google</span>
+                            </a>
+                        </li>
+                        <li id="pwa-install-sidebar-btn" class="hidden">
+                            <a href="#"
+                                class="hover:bg-primary/20 hover:text-white text-base-content/70 font-medium transition-all group h-12 flex items-center">
+                                <i class="bi bi-download text-xl group-hover:text-primary transition-colors"></i>
+                                <span class="nav-label ml-3 whitespace-nowrap">Instalar App</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- User Footer -->
+            <div class="mt-auto pt-6 border-t border-white/5 user-footer flex flex-col gap-4 transition-all shrink-0">
+                <div class="flex items-center gap-3 px-2 user-info-container transition-all text-sm group">
+                    <div class="avatar online placeholder">
+                        <div
+                            class="bg-neutral-focus text-neutral-content rounded-full w-10 border border-white/20 group-hover:border-primary/50 transition-colors">
+                            <span class="text-xl">U</span>
+                        </div>
+                    </div>
+                    <div class="user-info transition-opacity duration-200">
+                        <div class="font-bold text-gray-200 whitespace-nowrap group-hover:text-white transition-colors">
+                            Usuario</div>
+                        <div class="text-xs text-success whitespace-nowrap">Conectado</div>
+                    </div>
+                </div>
+
+                <button id="logout-btn"
+                    class="btn btn-ghost hover:bg-red-500/10 hover:text-red-400 text-gray-500 w-full justify-start gap-3 transition-all duration-300 group h-12 px-2">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-red-500/20 transition-colors shrink-0">
+                        <i
+                            class="bi bi-box-arrow-right text-lg group-hover:text-red-400 text-gray-500 transition-colors"></i>
+                    </div>
+                    <span class="logout-text font-medium text-sm group-hover:translate-x-1 transition-transform">Cerrar
+                        Sesión</span>
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Bottom Navigation Bar Flotante (Solo en Smartphones / Móviles - Oculto en Asistente IA) -->
+    <div id="pwa-bottom-dock"
+        class="{% if active_tab == 'ia' or not active_tab %}hidden{% endif %} fixed bottom-4 left-4 right-4 z-40 lg:hidden transition-all duration-500 transform translate-y-0">
+        <!-- Indicador visual de arrastre táctil -->
+        <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 animate-pulse"></div>
+
+        <div
+            class="glass-panel bg-slate-950/85 backdrop-blur-xl border border-white/10 rounded-2xl py-2 px-3 shadow-2xl flex items-center justify-around">
+
+            <!-- Tab: Asistente IA -->
+            <a href="/home?active_tab=ia"
+                class="flex flex-col items-center justify-center flex-1 transition-all duration-200 py-1 {% if active_tab == 'ia' or not active_tab %}text-cyan-400 scale-105 font-semibold{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="bi bi-robot text-xl"></i>
+                <span class="text-[9px] mt-0.5">Asistente</span>
+            </a>
+
+            <!-- Tab: Plantillas -->
+            <a href="/home?active_tab=manage"
+                class="flex flex-col items-center justify-center flex-1 transition-all duration-200 py-1 {% if active_tab == 'manage' %}text-cyan-400 scale-105 font-semibold{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="bi bi-folder2-open text-xl"></i>
+                <span class="text-[9px] mt-0.5">Plantillas</span>
+            </a>
+
+            <!-- Tab: Generar Doc (FAB Central Resaltado) -->
+            <a href="/home?active_tab=interactive"
+                class="flex flex-col items-center justify-center relative -top-3 w-13 h-13 bg-gradient-to-br from-primary via-secondary to-accent rounded-full text-white shadow-lg shadow-primary/30 active:scale-95 transition-all z-50">
+                <i class="bi bi-magic text-xl"></i>
+                <span class="absolute -bottom-5 text-[9px] text-gray-300 font-bold tracking-tight">Generar Doc</span>
+            </a>
+
+            <!-- Tab: Lotes Batch -->
+            <a href="/home?active_tab=batch"
+                class="flex flex-col items-center justify-center flex-1 transition-all duration-200 py-1 {% if active_tab == 'batch' %}text-cyan-400 scale-105 font-semibold{% else %}text-gray-400 hover:text-white{% endif %}">
+                <i class="bi bi-layers text-xl"></i>
+                <span class="text-[9px] mt-0.5">Lotes Batch</span>
+            </a>
+
+            <!-- Tab: Más Opciones (Drawer Toggle) -->
+            <label for="my-drawer-2"
+                class="flex flex-col items-center justify-center flex-1 cursor-pointer transition-all duration-200 py-1 text-gray-400 hover:text-white">
+                <i class="bi bi-grid-fill text-xl"></i>
+                <span class="text-[9px] mt-0.5">Más</span>
+            </label>
+
+        </div>
+    </div>
+
+    <!-- Zona sensible táctil al borde inferior de la pantalla para invocar el dock -->
+    <div id="pwa-dock-trigger-zone"
+        class="{% if active_tab == 'ia' or not active_tab %}hidden{% endif %} fixed bottom-0 left-0 right-0 h-5 bg-transparent z-30 lg:hidden">
+    </div>
+
+    </div>
+    {% endif %}
+
+    <!-- Modals (Rendered outside the stacking context) -->
+    {% block modals %}{% endblock %}
+
+    <!-- Floating Zen Mode Toggle (Visible only when Zen Mode is active) -->
+    <button id="zen-exit-float-btn" onclick="toggleZenMode()"
+        class="fixed top-4 left-4 z-[9999] btn btn-circle btn-primary bg-gradient-to-r from-primary to-accent border-none text-white shadow-xl shadow-primary/20 hidden hover:scale-105 active:scale-95 transition-transform"
+        title="Salir del Modo Litigio Zen (Alt+Z)">
+        <i class="bi bi-eye-fill text-lg"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar Logic
+        const sidebar = document.getElementById('app-sidebar');
+        const toggleIcon = document.getElementById('sidebar-toggle-icon');
+
+        function applyCollapsedState(isCollapsed) {
+            if (!sidebar) return; // Guard clause
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+                toggleIcon?.classList.replace('bi-chevron-left', 'bi-chevron-right');
+            } else {
+                sidebar.classList.remove('collapsed');
+                toggleIcon?.classList.replace('bi-chevron-right', 'bi-chevron-left');
+            }
+        }
+
+        // Init State
+        if (sidebar) {
+            const savedState = localStorage.getItem('sidebar-collapsed') === 'true';
+            applyCollapsedState(savedState);
+        }
+
+        window.toggleSidebar = () => {
+            if (!sidebar) return;
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebar-collapsed', isCollapsed);
+            // Icon transition
+            if (isCollapsed) {
+                toggleIcon?.classList.replace('bi-chevron-left', 'bi-chevron-right');
+            } else {
+                toggleIcon?.classList.replace('bi-chevron-right', 'bi-chevron-left');
+            }
+
+            // Adjust layouts if necessary (optional, e.g. resize charts)
+            window.dispatchEvent(new Event('resize'));
+        };
+
+        // Global Loader Logic
+        window.showLoader = (text = "Procesando...") => {
+            const loader = document.getElementById('global-loader');
+            const loaderText = document.getElementById('loader-text');
+            if (loader && loaderText) {
+                loaderText.textContent = text;
+                loader.classList.remove('hidden');
+                requestAnimationFrame(() => loader.classList.remove('opacity-0'));
+            }
+        };
+
+        window.hideLoader = () => {
+            const loader = document.getElementById('global-loader');
+            if (loader) {
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.classList.add('hidden'), 300);
+            }
+        };
+
+        // Init Toasts Global
+        const toastContainer = document.querySelector('.toast-container');
+        window.showToast = (message, type = 'info') => {
+            const toastId = 'toast-' + Math.random().toString(36).substr(2, 9);
+            const icons = {
+                success: '<i class="bi bi-check-circle-fill text-success text-lg"></i>',
+                danger: '<i class="bi bi-exclamation-triangle-fill text-error text-lg"></i>',
+                error: '<i class="bi bi-exclamation-triangle-fill text-error text-lg"></i>',
+                info: '<i class="bi bi-info-circle-fill text-info text-lg"></i>'
+            };
+
+            const borderColors = {
+                success: 'border-success/30 shadow-success/5',
+                danger: 'border-error/30 shadow-error/5',
+                error: 'border-error/30 shadow-error/5',
+                info: 'border-info/30 shadow-info/5'
+            };
+
+            const colorClass = borderColors[type] || borderColors.info;
+            const toastHTML = `
+                <div class="toast show glass-panel border ${colorClass} text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-4 mb-3 transition-all duration-300 transform translate-y-0 opacity-100 hover:scale-[1.02] cursor-pointer" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}" onclick="this.remove()">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center justify-center shrink-0">
+                            ${icons[type] || icons['info']}
+                        </div>
+                        <div class="text-xs font-mono font-medium leading-relaxed">${message}</div>
+                    </div>
+                    <button type="button" class="btn btn-circle btn-xs btn-ghost hover:bg-white/10 text-white/50 hover:text-white shrink-0" onclick="event.stopPropagation(); this.closest('.toast').remove();">
+                        <i class="bi bi-x text-lg"></i>
+                    </button>
+                </div>`;
+
+            if (toastContainer) {
+                toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+                const toastElement = document.getElementById(toastId);
+                // Cerrar automáticamente en 5 segundos
+                setTimeout(() => {
+                    if (toastElement) {
+                        toastElement.classList.add('opacity-0', 'translate-y-2');
+                        setTimeout(() => toastElement.remove(), 300);
+                    }
+                }, 5000);
+            }
+        };
+
+        // HTMX Toast Listener
+        document.body.addEventListener('htmx:afterSwap', function (evt) {
+            const xhr = evt.detail.xhr;
+            const toastMsg = xhr.getResponseHeader("HX-Trigger-Toast");
+            if (toastMsg) {
+                try {
+                    const data = JSON.parse(toastMsg);
+                    showToast(data.message, data.type);
+                } catch (e) {
+                    showToast(toastMsg);
+                }
+            }
+        });
+
+        // Logout Logic
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
+            // 1. Remove Tokens
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('isWalletConnected');
+
+            // 2. Show Feedback
+            showToast('Cerrando sesión...', 'info');
+
+            // 3. Redirect
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 800);
+        });
+
+        // Google Connect Logic
+        document.getElementById('connect-google-btn')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                showToast('No estás autenticado', 'error');
+                return;
+            }
+
+            // Feedback UI
+            const btn = e.currentTarget;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Redirigiendo...';
+
+            try {
+                const res = await fetch('/auth/google/connect', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    showToast('Sesión expirada', 'error');
+                    setTimeout(() => window.location.href = '/login', 1000);
+                    return;
+                }
+
+                if (!res.ok) throw new Error('Error iniciando conexión');
+
+                const data = await res.json();
+                if (data.authorization_url) {
+                    window.location.href = data.authorization_url;
+                }
+            } catch (error) {
+                showToast('Error al conectar con Google', 'error');
+                console.error(error);
+                btn.innerHTML = originalContent;
+            }
+        });
+        // --- Modo Litigio Zen Logic ---
+        window.toggleZenMode = () => {
+            const body = document.body;
+            const isActive = body.classList.toggle('zen-active');
+            localStorage.setItem('zen-mode-active', isActive);
+
+            // Sincronizar iconos en base.html
+            const icons = document.querySelectorAll('.zen-icon-global');
+            icons.forEach(icon => {
+                if (isActive) {
+                    icon.classList.replace('bi-eye-slash', 'bi-eye-fill');
+                    icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+                    icon.classList.add('text-accent');
+                } else {
+                    icon.classList.replace('bi-eye-fill', 'bi-eye-slash');
+                    icon.classList.add('bi-eye-slash-fill');
+                    icon.classList.remove('text-accent');
+                }
+            });
+
+            // Notificación visual
+            if (isActive) {
+                showToast('Modo Litigio Zen activado. Concentración máxima.', 'success');
+            } else {
+                showToast('Modo Litigio Zen desactivado.', 'info');
+            }
+
+            // Sincronizar con el iframe del chat de IA si existe en la página
+            const iframe = document.getElementById('ia-chat-iframe');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'ZEN_MODE_TOGGLE',
+                        active: isActive
+                    }, '*');
+                } catch (e) {
+                    console.warn("No se pudo comunicar con el iframe del chat", e);
+                }
+            }
+
+            // Notificar redimensionamiento por si hay gráficas o editores
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 350);
+        };
+
+        // Escuchar mensajes provenientes del iframe
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'ZEN_MODE_REQUEST_TOGGLE') {
+                window.toggleZenMode();
+            }
+        });
+
+        // Cargar estado inicial
+        document.addEventListener('DOMContentLoaded', () => {
+            const zenActive = localStorage.getItem('zen-mode-active') === 'true';
+            if (zenActive) {
+                document.body.classList.add('zen-active');
+                const icons = document.querySelectorAll('.zen-icon-global');
+                icons.forEach(icon => {
+                    icon.classList.replace('bi-eye-slash', 'bi-eye-fill');
+                    icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+                    icon.classList.add('text-accent');
+                });
+            }
+
+            // Atajo de teclado Alt+Z
+            window.addEventListener('keydown', (e) => {
+                if (e.altKey && (e.key === 'z' || e.key === 'Z')) {
+                    e.preventDefault();
+                    window.toggleZenMode();
+                }
+            });
+        });
+    </script>
+
+    <!-- Banner Flotante de Instalación PWA (A2HS) -->
+    <div id="pwa-install-banner"
+        class="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:max-w-sm glass-panel border border-primary/20 rounded-2xl p-4 shadow-2xl z-[9999] transform translate-y-24 opacity-0 transition-all duration-500 ease-out hidden">
+        <div class="flex items-start gap-3">
+            <div
+                class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+                <img src="/static/icons/icon-192x192.png" alt="STAR-DOC Logo" class="w-8 h-8 rounded-lg">
+            </div>
+            <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-bold text-white leading-tight">Instalar STAR-DOC</h4>
+                <p class="text-xs text-gray-400 mt-1 leading-snug">Accede al Asistente IA y a tus plantillas
+                    directamente desde tu pantalla de inicio.</p>
+                <div class="flex gap-2 mt-3">
+                    <button id="pwa-install-btn"
+                        class="btn btn-xs btn-primary bg-gradient-to-r from-primary to-accent border-none text-white rounded-lg font-bold px-3">Instalar</button>
+                    <button id="pwa-close-btn"
+                        class="btn btn-xs btn-ghost text-gray-400 hover:text-white rounded-lg px-2">Quizás
+                        luego</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Instrucciones de Instalación PWA (Fallback cuando no se puede instalar nativamente) -->
+    <dialog id="pwa-instructions-modal"
+        class="modal modal-bottom sm:modal-middle bg-black/70 backdrop-blur-md z-[99999]">
+        <div
+            class="modal-box border border-white/10 bg-slate-950/95 text-white rounded-3xl p-6 shadow-2xl relative max-w-md mx-auto">
+            <!-- Botón de Cerrar -->
+            <form method="dialog" class="absolute top-4 right-4">
+                <button class="btn btn-sm btn-circle btn-ghost text-gray-400 hover:text-white"
+                    aria-label="Cerrar modal">✕</button>
+            </form>
+
+            <div class="text-center mb-6">
+                <div
+                    class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+                    <img src="/static/icons/icon-192x192.png" alt="STAR-DOC Logo" class="w-11 h-11 rounded-lg">
+                </div>
+                <h3 class="text-xl font-bold text-white">Lleva STAR-DOC en tu Celular</h3>
+                <p class="text-xs text-gray-400 mt-1">Sigue estos sencillos pasos para instalar la aplicación móvil.</p>
+            </div>
+
+            <!-- Selector de Sistema Operativo (Tabs) -->
+            <div class="flex bg-white/5 p-1 rounded-xl mb-6 text-sm font-semibold border border-white/5">
+                <button id="tab-pwa-ios" class="flex-1 py-2 text-center rounded-lg transition-all focus:outline-none"
+                    onclick="selectPwaTab('ios')">
+                    <i class="bi bi-apple mr-1"></i> iOS
+                </button>
+                <button id="tab-pwa-android"
+                    class="flex-1 py-2 text-center rounded-lg transition-all focus:outline-none"
+                    onclick="selectPwaTab('android')">
+                    <i class="bi bi-android2 mr-1"></i> Android
+                </button>
+                <button id="tab-pwa-desktop"
+                    class="flex-1 py-2 text-center rounded-lg transition-all focus:outline-none"
+                    onclick="selectPwaTab('desktop')">
+                    <i class="bi bi-laptop mr-1"></i> PC
+                </button>
+            </div>
+
+            <!-- Contenido Dinámico por OS -->
+            <!-- iOS -->
+            <div id="pwa-content-ios" class="space-y-4 text-sm hidden">
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold shrink-0 text-xs">1</span>
+                    <p class="text-gray-300">Abre la página web en <strong class="text-white">Safari</strong> (el
+                        navegador nativo de Apple).</p>
+                </div>
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold shrink-0 text-xs">2</span>
+                    <p class="text-gray-300">Toca el botón de <strong class="text-white">Compartir</strong> <i
+                            class="bi bi-share text-cyan-400 mx-1"></i> en la barra inferior.</p>
+                </div>
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold shrink-0 text-xs">3</span>
+                    <p class="text-gray-300">Selecciona <strong class="text-white">"Agregar al inicio"</strong> o
+                        <strong class="text-white">"Añadir a pantalla de inicio"</strong> <i
+                            class="bi bi-plus-square text-cyan-400 mx-1"></i>.</p>
+                </div>
+            </div>
+
+            <!-- Android -->
+            <div id="pwa-content-android" class="space-y-4 text-sm hidden">
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold shrink-0 text-xs">1</span>
+                    <p class="text-gray-300">Toca el menú de <strong class="text-white">tres puntos</strong> <i
+                            class="bi bi-three-dots-vertical text-cyan-400 mx-1"></i> en la esquina superior derecha de
+                        Chrome.</p>
+                </div>
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold shrink-0 text-xs">2</span>
+                    <p class="text-gray-300">Elige <strong class="text-white">"Instalar aplicación"</strong> o <strong
+                            class="text-white">"Agregar a la pantalla principal"</strong>.</p>
+                </div>
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold shrink-0 text-xs">3</span>
+                    <p class="text-gray-300">Confirma la descarga en el diálogo para completar la instalación.</p>
+                </div>
+            </div>
+
+            <!-- Desktop (Chrome/Edge/Safari) -->
+            <div id="pwa-content-desktop" class="space-y-4 text-sm hidden">
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center font-bold shrink-0 text-xs">1</span>
+                    <p class="text-gray-300">En la barra de direcciones de tu navegador, busca el icono de <strong
+                            class="text-white">Instalar (pantalla con flecha hacia abajo)</strong>.</p>
+                </div>
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center font-bold shrink-0 text-xs">2</span>
+                    <p class="text-gray-300">Haz clic en el icono y presiona <strong
+                            class="text-white">Instalar</strong>.</p>
+                </div>
+                <div class="flex gap-3 items-start bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span
+                        class="w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center font-bold shrink-0 text-xs">3</span>
+                    <p class="text-gray-300">STAR-DOC se abrirá de inmediato en una ventana independiente tipo app
+                        nativa.</p>
+                </div>
+            </div>
+
+            <div class="modal-action justify-center mt-6">
+                <form method="dialog" class="w-full">
+                    <button
+                        class="btn btn-primary bg-gradient-to-r from-primary to-accent border-none text-white rounded-xl w-full font-bold">¡Entendido!</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- PWA Service Worker & Installation Logic -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('Service Worker registrado con éxito. Scope:', reg.scope))
+                    .catch((err) => console.error('Error registrando Service Worker:', err));
+            });
+        }
+    </script>
+
+    <!-- Toast de Estado de Conexión (PWA) -->
+    <div id="pwa-network-toast" class="toast toast-end toast-bottom z-[2000] hidden">
+        <div class="alert shadow-2xl backdrop-blur-md border border-white/10" id="pwa-network-alert">
+            <span id="pwa-network-message" class="text-xs font-semibold text-white"></span>
+        </div>
+    </div>
+
+    <!-- Script del Controlador de PWA -->
+    <script src="/static/js/pwa-controller.js"></script>
+
+    <!-- Lógica de Bottom Dock Auto-ocultable y Gestos de Deslizamiento Táctil -->
+    <script>
+        const bottomDock = document.getElementById('pwa-bottom-dock');
+        const dockTriggerZone = document.getElementById('pwa-dock-trigger-zone');
+        const mainContentEl = document.querySelector('main');
+
+        let lastScrollTop = 0;
+
+        function showDock() {
+            if (!bottomDock) return;
+            bottomDock.classList.remove('translate-y-28', 'opacity-0');
+            bottomDock.classList.add('translate-y-0', 'opacity-100');
+            document.body.classList.remove('pwa-dock-hidden');
+        }
+
+        function hideDock() {
+            if (!bottomDock) return;
+            bottomDock.classList.remove('translate-y-0', 'opacity-100');
+            bottomDock.classList.add('translate-y-28', 'opacity-0');
+            document.body.classList.add('pwa-dock-hidden');
+        }
+
+        // 1. Mostrar/Ocultar con Scroll en el contenido principal
+        if (mainContentEl) {
+            mainContentEl.addEventListener('scroll', () => {
+                let st = mainContentEl.scrollTop;
+                if (st > lastScrollTop && st > 60) {
+                    // Deslizando hacia abajo -> Ocultar Dock para lectura limpia
+                    hideDock();
+                } else {
+                    // Deslizando hacia arriba -> Revelar Dock para navegar
+                    showDock();
+                }
+                lastScrollTop = st <= 0 ? 0 : st;
+            }, { passive: true });
+        }
+
+        // 2. Revelar al tocar/pasar el dedo por la zona trigger en la parte inferior
+        if (dockTriggerZone) {
+            const handleTouchReveal = () => {
+                showDock();
+            };
+            dockTriggerZone.addEventListener('touchstart', handleTouchReveal, { passive: true });
+            dockTriggerZone.addEventListener('touchmove', handleTouchReveal, { passive: true });
+            dockTriggerZone.addEventListener('mouseenter', handleTouchReveal);
+        }
+
+        // 3. Capturar deslizamiento (swipe up) en la mitad inferior de la pantalla para revelar
+        let touchStartGlobalY = 0;
+        window.addEventListener('touchstart', (e) => {
+            touchStartGlobalY = e.touches[0].clientY;
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const windowHeight = window.innerHeight;
+
+            // Si el toque inició en el tercio inferior y desliza hacia arriba por más de 15px
+            if (touchStartGlobalY > windowHeight - 180 && (touchStartGlobalY - touchY) > 15) {
+                showDock();
+            }
+        }, { passive: true });
+
+        // 4. Escuchar mensajes provenientes del iframe del chat (ia.html) para controlar la visibilidad del Dock
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'PWA_DOCK_CONTROL') {
+                if (event.data.action === 'hide') {
+                    hideDock();
+                } else if (event.data.action === 'show') {
+                    showDock();
+                }
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

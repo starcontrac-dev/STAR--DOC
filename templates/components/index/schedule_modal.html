@@ -1,0 +1,110 @@
+<!-- Schedule Modal (Smart) -->
+<dialog id="scheduleModal" class="modal">
+    <div
+        class="modal-box glass-panel text-base-content max-h-[85vh] overflow-y-auto custom-scrollbar p-0 flex flex-col">
+        <div class="p-6 flex-1">
+            <h3 class="font-bold text-xl mb-6 flex items-center gap-2">
+                <i class="bi bi-calendar-event text-primary"></i> Programar Tarea
+            </h3>
+
+            <!-- Frequency Tabs -->
+            <div role="tablist" class="tabs tabs-boxed bg-black/40 p-1 mb-6 border border-white/5">
+                <a role="tab" class="tab tab-active transition-all duration-300 font-medium" data-tab="daily"
+                    onclick="switchScheduleTab('daily', this)">Diario</a>
+                <a role="tab" class="tab transition-all duration-300 font-medium" data-tab="weekly"
+                    onclick="switchScheduleTab('weekly', this)">Semanal</a>
+                <a role="tab" class="tab transition-all duration-300 font-medium" data-tab="monthly"
+                    onclick="switchScheduleTab('monthly', this)">Mensual</a>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Time Picker (Common) -->
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Hora de
+                            Ejecución</span></label>
+                    <input type="time" id="sched-time"
+                        class="input input-bordered bg-black/20 focus:border-primary w-full"
+                        onchange="updateSmartCron()" />
+                </div>
+
+                <!-- Weekly Options -->
+                <div id="sched-weekly-opts" class="hidden animate-fade-in">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Días de la
+                            Semana</span></label>
+                    <div class="flex flex-wrap justify-between gap-2 p-2 bg-black/20 rounded-xl border border-white/5">
+                        <button type="button"
+                            class="btn btn-circle btn-ghost border border-white/10 day-btn hover:border-primary hover:text-primary transition-all duration-200"
+                            data-day="1" onclick="toggleDay(this)">L</button>
+                        <button type="button"
+                            class="btn btn-circle btn-ghost border border-white/10 day-btn hover:border-primary hover:text-primary transition-all duration-200"
+                            data-day="2" onclick="toggleDay(this)">M</button>
+                        <button type="button"
+                            class="btn btn-circle btn-ghost border border-white/10 day-btn hover:border-primary hover:text-primary transition-all duration-200"
+                            data-day="3" onclick="toggleDay(this)">X</button>
+                        <button type="button"
+                            class="btn btn-circle btn-ghost border border-white/10 day-btn hover:border-primary hover:text-primary transition-all duration-200"
+                            data-day="4" onclick="toggleDay(this)">J</button>
+                        <button type="button"
+                            class="btn btn-circle btn-ghost border border-white/10 day-btn hover:border-primary hover:text-primary transition-all duration-200"
+                            data-day="5" onclick="toggleDay(this)">V</button>
+                        <button type="button"
+                            class="btn btn-circle btn-ghost border border-white/10 day-btn hover:border-primary hover:text-primary transition-all duration-200"
+                            data-day="6" onclick="toggleDay(this)">S</button>
+                        <button type="button"
+                            class="btn btn-circle btn-ghost border border-white/10 day-btn hover:border-primary hover:text-primary transition-all duration-200 text-error"
+                            data-day="0" onclick="toggleDay(this)">D</button>
+                    </div>
+                </div>
+
+                <!-- Monthly Options -->
+                <div id="sched-monthly-opts" class="hidden animate-fade-in">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Día del Mes</span></label>
+                    <select id="sched-dom" class="select select-bordered w-full bg-black/20 focus:border-primary"
+                        onchange="updateSmartCron()">
+                        <option value="1">1° de cada mes</option>
+                        <option value="5">5 de cada mes</option>
+                        <option value="10">10 de cada mes</option>
+                        <option value="15">15 de cada mes</option>
+                        <option value="20">20 de cada mes</option>
+                        <option value="25">25 de cada mes</option>
+                        <option value="L">Último día del mes</option>
+                    </select>
+                </div>
+
+                <!-- Summary -->
+                <div
+                    class="alert bg-gradient-to-r from-primary/10 to-transparent border-l-4 border-primary text-sm py-3 rounded-r-lg rounded-l-none">
+                    <div class="flex items-center gap-3">
+                        <i class="bi bi-clock-history text-2xl text-primary"></i>
+                        <div>
+                            <h4 class="font-bold text-primary">Resumen</h4>
+                            <span id="sched-summary" class="opacity-80">Selecciona una frecuencia.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated CRON (Hidden) -->
+                <div class="collapse collapse-arrow bg-base-200/20 rounded-box border border-white/5">
+                    <input type="checkbox" />
+                    <div class="collapse-title text-xs opacity-50 font-mono py-2 min-h-0">Avanzado: Ver CRON</div>
+                    <div class="collapse-content">
+                        <input type="text" id="cron-expression-input"
+                            class="input input-sm w-full font-mono bg-transparent" readonly />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="modal-action bg-black/40 p-4 m-0 border-t border-white/5 backdrop-blur-md sticky bottom-0 z-10 flex justify-end gap-3">
+            <form method="dialog">
+                <button class="btn btn-ghost hover:bg-white/10">Cancelar</button>
+            </form>
+            <button
+                class="btn btn-primary text-white bg-gradient-to-r from-primary to-secondary border-none shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                id="confirm-schedule-btn">
+                <i class="bi bi-calendar-check"></i> Confirmar Programación
+            </button>
+        </div>
+    </div>
+</dialog>

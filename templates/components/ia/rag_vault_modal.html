@@ -1,0 +1,171 @@
+<!-- Modal Bóveda RAG -->
+<div id="rag_vault_modal"
+    class="fixed inset-0 bg-black/75 backdrop-blur-md z-[1050] flex items-center justify-center hidden"
+    style="opacity: 0; transition: opacity 0.3s ease;"
+    @click="if($event.target===document.getElementById('rag_vault_modal')) closeRagVaultModal()">
+
+    <!-- Modal Content (Responsivo: full screen móvil, caja grande en pc con diseño premium) -->
+    <div class="bg-slate-950/90 backdrop-blur-3xl border border-white/10 w-full h-full sm:w-[98%] sm:h-[96%] sm:max-w-[1800px] sm:rounded-2xl shadow-2xl shadow-cyan-950/20 flex flex-col overflow-hidden relative transform scale-95 transition-transform duration-300 ease-out text-white"
+        id="rv-modal-card">
+
+        <!-- Header -->
+        <div class="bg-white/5 border-b border-white/10 p-4 flex justify-between items-center shrink-0">
+            <h3 class="font-bold text-base sm:text-lg text-white flex items-center gap-2">
+                <div class="p-1.5 bg-indigo-500/20 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m0 0v2m0-2h2m-2 0H10m4-7V6a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h8m4 0h4a2 2 0 002-2v-4a2 2 0 00-2-2h-4v6z" />
+                    </svg>
+                </div>
+                Mi Bóveda Documental
+            </h3>
+            <button onclick="closeRagVaultModal()"
+                class="text-gray-400 hover:bg-white/10 hover:text-white p-1.5 rounded-lg transition-colors focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Tabs de navegación entre Documentos y Expedientes -->
+        <div class="flex border-b border-white/10 bg-black/40 shrink-0">
+            <button id="tab-vault-docs" onclick="switchVaultTab('docs')" class="flex-1 py-3 text-center text-xs font-bold border-b-2 border-cyan-400 text-cyan-400 transition-all focus:outline-none">
+                📄 Documentos de la Bóveda
+            </button>
+            <button id="tab-vault-audits" onclick="switchVaultTab('audits')" class="flex-1 py-3 text-center text-xs font-bold border-b-2 border-transparent text-gray-400 hover:text-cyan-400 transition-all focus:outline-none">
+                💼 Expedientes e Integridad
+            </button>
+        </div>
+
+        <!-- Body (Split View Responsive) -->
+        <div class="flex flex-col md:flex-row flex-1 overflow-hidden bg-black/20">
+
+            <!-- Izquierda: Contenedor con Tabs dinámicos -->
+            <div id="rv-left-panel" class="w-full md:w-1/3 xl:w-1/4 h-full border-r border-white/10 flex flex-col md:flex bg-black/40 backdrop-blur-md shrink-0">
+                
+                <!-- Contenedor 1: Documentos -->
+                <div id="rv-docs-container" class="flex flex-col h-full overflow-hidden">
+                    <div class="p-3 sm:p-4 border-b border-white/5 flex justify-between items-center shrink-0 bg-white/5">
+                        <span class="text-xs text-gray-400 font-medium" id="rv-doc-count">0 documentos</span>
+                        <div class="flex items-center gap-1.5 font-sans">
+                            <button onclick="document.getElementById('rv-file-input').click()"
+                                class="bg-indigo-600 shadow-sm shadow-indigo-500/20 text-white hover:bg-indigo-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 hover:scale-[1.02]"
+                                title="Subir archivos individuales">
+                                📄 Subir
+                            </button>
+                            <button onclick="document.getElementById('rv-folder-input').click()"
+                                class="bg-purple-600 shadow-sm shadow-purple-500/20 text-white hover:bg-purple-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 hover:scale-[1.02]"
+                                title="Subir una carpeta completa y crear expediente">
+                                📁 Carpeta
+                            </button>
+                        </div>
+                        <input type="file" id="rv-file-input" class="hidden" accept=".pdf,.doc,.docx,.txt,.md"
+                            onchange="uploadToVault(event)">
+                        <input type="file" id="rv-folder-input" class="hidden" webkitdirectory directory multiple
+                            onchange="uploadFolderToVault(event)">
+                    </div>
+
+                    <!-- Selector de anclaje IPFS al subir en la Bóveda -->
+                    <div class="px-4 py-2 bg-white/5 border-b border-white/5 flex items-center justify-between text-xs text-gray-400">
+                        <label class="font-medium cursor-pointer flex items-center gap-1.5">
+                            <input type="checkbox" id="rv-anchor-ipfs" class="rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500 h-3.5 w-3.5" checked>
+                            Anclar a IPFS
+                        </label>
+                        <select id="rv-classification" class="bg-slate-900 border border-white/10 rounded px-2 py-1 text-[10px] text-gray-300 focus:border-cyan-500 focus:outline-none scheme-dark">
+                            <option value="public">🟢 Público</option>
+                            <option value="confidential">🟡 Confidencial</option>
+                            <option value="chain_of_custody">🟣 Custodia</option>
+                        </select>
+                    </div>
+
+                    <!-- Panel de empaquetar en Merkle DAG (Expediente) -->
+                    <div id="rv-pack-container" class="p-3 bg-indigo-950/20 border-b border-indigo-500/20 hidden transition-all duration-300">
+                        <div class="flex flex-col gap-2">
+                            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Crear Expediente IPFS</span>
+                            <div class="flex gap-1.5">
+                                <input type="text" id="rv-pack-name" placeholder="Nombre del expediente" class="flex-1 px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-white/10 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-white">
+                                <button onclick="createIPFSPack()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm">
+                                    Crear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="rv-doc-list" class="flex-1 overflow-y-auto p-2 sm:p-3 space-y-2 custom-scrollbar">
+                        <!-- Loader placeholder -->
+                        <div class="flex justify-center p-4">
+                            <div class="animate-pulse bg-white/5 h-12 w-full rounded-xl"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenedor 2: Expedientes (Oculto por defecto) -->
+                <div id="rv-audits-container" class="flex flex-col h-full overflow-hidden hidden">
+                    <div class="p-3 sm:p-4 border-b border-white/5 flex justify-between items-center shrink-0 bg-white/5">
+                        <span class="text-xs text-gray-400 font-medium" id="rv-audits-count">0 expedientes</span>
+                        <span class="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-sans">Merkle DAGs</span>
+                    </div>
+                    <div id="rv-audits-list" class="flex-1 overflow-y-auto p-2 sm:p-3 space-y-2 custom-scrollbar">
+                        <p class="text-gray-400 text-xs text-center mt-6">Cargando expedientes...</p>
+                            </div>
+                </div>
+
+            </div>
+
+            <!-- Derecha: Previsualización de texto o Logs de Custodia -->
+            <div id="rv-right-panel" class="w-full h-full md:w-2/3 xl:w-3/4 flex flex-col bg-black/30 overflow-hidden relative hidden md:flex">
+                <div id="rv-preview-header"
+                    class="p-4 border-b border-white/5 bg-black/60 backdrop-blur-md shrink-0 hidden shadow-sm z-10 sticky top-0 flex justify-between items-center">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <!-- Botón de retroceso en móvil -->
+                        <button id="rv-mobile-back-btn" onclick="clearRvPreview()"
+                            class="md:hidden p-1.5 bg-white/5 hover:bg-white/10 text-cyan-400 rounded-lg transition-colors focus:outline-none shrink-0 select-none touch-action-manipulation mr-1"
+                            title="Volver al listado">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                        </button>
+                        <div class="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg shrink-0" id="rv-preview-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-bold text-white truncate text-sm" id="rv-preview-title">Documento</h4>
+                            <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5 font-medium" id="rv-preview-meta">Fecha de subida: ...</p>
+                        </div>
+                    </div>
+                    <!-- Botones de Acción sobre el documento actual -->
+                    <div id="rv-preview-actions" class="flex items-center gap-2 shrink-0"></div>
+                </div>
+
+                <!-- Contenedor del contenido (Pre-wrap para texto o tabla para logs) -->
+                <div id="rv-preview-content"
+                    class="flex-1 p-4 sm:p-6 overflow-y-auto font-mono text-[11px] sm:text-xs text-gray-300 leading-relaxed custom-scrollbar selection:bg-indigo-500/30 selection:text-white"
+                    style="white-space: pre-wrap; word-wrap: break-word;">
+
+                    <div class="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
+                        <div class="p-6 bg-white/5 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-12 w-12 sm:h-16 sm:w-16 opacity-40 text-gray-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <p class="text-xs sm:text-sm font-medium text-center px-4 max-w-sm font-sans text-gray-400">
+                            Selecciona un documento del panel izquierdo para ver su contenido, o un expediente para inspeccionar su bitácora criptográfica e historial de cadena de custodia.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
