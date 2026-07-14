@@ -13,7 +13,7 @@
   <a href="#-instalación-rápida"><img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+"/></a>
   <a href="#-tecnologías"><img src="https://img.shields.io/badge/FastAPI-0.111-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/></a>
   <a href="#-tecnologías"><img src="https://img.shields.io/badge/PostgreSQL-15+-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
-  <a href="#-tecnologías"><img src="https://img.shields.io/badge/Gemini_AI-2.5-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini AI"/></a>
+  <a href="#-tecnologías"><img src="https://img.shields.io/badge/Gemini_AI--4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini AI"/></a>
   <a href="#-tecnologías"><img src="https://img.shields.io/badge/IPFS-Web3-65C2CB?style=for-the-badge&logo=ipfs&logoColor=white" alt="IPFS"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License"/></a>
 </p>
@@ -31,7 +31,7 @@
 
 ## 🌟 ¿Qué es STAR-DOC?
 
-**STAR-DOC** es una plataforma **full-stack de inteligencia legal** que combina **IA Generativa (Gemini 2.5)**, **almacenamiento inmutable en IPFS**, **firma digital con OTP**, y **automatización masiva de documentos** para transformar la práctica jurídica.
+**STAR-DOC** es una plataforma **full-stack de inteligencia legal** que combina **IA Generativa (Gemini )**, **almacenamiento inmutable en IPFS**, **firma digital con OTP**, y **automatización masiva de documentos** para transformar la práctica jurídica.
 
 > 🧠 Imagina un abogado asistido por IA que puede: redactar contratos en segundos, buscar jurisprudencia actualizada en tiempo real, cifrar y certificar documentos en blockchain descentralizado, y gestionar una agenda completa de citas — todo desde una sola plataforma.
 
@@ -39,7 +39,7 @@
 
 ## 🚀 Características Principales
 
-### 🤖 Motor de IA Legal (Gemini 2.5)
+### 🤖 Motor de IA Legal (Gemini )
 - **Chat Legal Inteligente** con streaming SSE en tiempo real
 - **Cascada de Modelos**: `gemini-2.5-flash` → `gemini-2.5-pro` → `gemini-2.5-flash-lite` (fallback automático)
 - **Rotación de API Keys** con balanceo de carga para alta disponibilidad
@@ -147,7 +147,7 @@
 │         ▼              ▼              ▼                            │
 │  ┌──────────┐  ┌──────────────┐  ┌──────────────┐               │
 │  │ Gemini   │  │ Google APIs  │  │ IPFS Kubo +  │               │
-│  │ AI 2.5   │  │ Drive/Cal    │  │ Pinata Cloud │               │
+│  │ AI   │  │ Drive/Cal    │  │ Pinata Cloud │               │
 │  └──────────┘  └──────────────┘  └──────────────┘               │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -406,7 +406,7 @@ curl -X POST http://localhost:8000/generation/generate \
 |-----------|-----------|
 | **Backend** | FastAPI 0.111, Python 3.11+, Uvicorn |
 | **Base de Datos** | PostgreSQL 15+, SQLModel, asyncpg, Alembic |
-| **IA** | Google Gemini 2.5 (Flash/Pro), httpx |
+| **IA** | Google Gemini (Flash/Pro), httpx |
 | **Frontend** | Jinja2, Alpine.js, HTMX, Vanilla JS |
 | **Auth** | JWT (python-jose), Web3 (eth-account) |
 | **Documentos** | python-docx, docxtpl, PyMuPDF, Mammoth |
