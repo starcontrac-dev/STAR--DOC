@@ -147,7 +147,7 @@
 │         ▼              ▼              ▼                            │
 │  ┌──────────┐  ┌──────────────┐  ┌──────────────┐               │
 │  │ Gemini   │  │ Google APIs  │  │ IPFS Kubo +  │               │
-│  │ AI   │  │ Drive/Cal    │  │ Pinata Cloud │               │
+│  │ AI API   │  │ Drive/Cal    │  │ Pinata Cloud │               │
 │  └──────────┘  └──────────────┘  └──────────────┘               │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -422,7 +422,7 @@ curl -X POST http://localhost:8000/generation/generate \
 
 ## 🗺️ Roadmap
 
-- [x] Motor de IA con Gemini 2.5 + Function Calling
+- [x] Motor de IA con Gemini + Function Calling
 - [x] Generación masiva (batch) de documentos
 - [x] Firma digital con verificación OTP
 - [x] Almacenamiento IPFS con cifrado AES-256
