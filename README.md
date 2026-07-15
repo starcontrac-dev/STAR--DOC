@@ -295,7 +295,8 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edita el archivo `.env` con tus credenciales. Consulta la sección [Configuración de APIs](#-configuración-de-apis) para obtener cada clave.
+> [!IMPORTANT]
+> **Edición de Variables de Entorno:** Abre y configura el archivo `.env` resultante. Es indispensable registrar la variable `DATABASE_URL` (conexión a PostgreSQL) y al menos una clave en `GEMINI_API_KEY` para iniciar el servicio con éxito. Consulta la sección [Configuración de APIs](#-configuración-de-apis) para el detalle de cada integración opcional.
 
 ### 5️⃣ Configurar Base de Datos
 
@@ -333,7 +334,8 @@ La IA es el corazón de STAR-DOC. Necesitas al menos **1 API key** de Gemini:
    ```
    GEMINI_API_KEY=AIzaSy...
    ```
-> 💡 **Pro Tip**: Agrega hasta 10 claves (`GEMINI_API_KEY_2`, `_3`, ..., `_10`) para rotación automática y evitar rate limits.
+> [!TIP]
+> **Rotación de Claves para Alta Disponibilidad:** Puedes configurar hasta 10 llaves de API de Gemini (`GEMINI_API_KEY_2`, `GEMINI_API_KEY_3`, ..., `GEMINI_API_KEY_10`) en tu archivo `.env`. El sistema las rotará y balanceará de forma asíncrona y transparente para mitigar las limitaciones de tasa (rate limits).
 
 ### Brave Search (Recomendado)
 Para búsqueda de jurisprudencia en tiempo real:
