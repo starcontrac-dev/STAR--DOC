@@ -35,6 +35,17 @@
 
 > 🧠 Imagina un abogado asistido por IA que puede: redactar contratos en segundos, buscar jurisprudencia actualizada en tiempo real, cifrar y certificar documentos en blockchain descentralizado, y gestionar una agenda completa de citas — todo desde una sola plataforma.
 
+### 📺 Demostración y Explicación en Video
+Descubre el funcionamiento completo y la visión detrás de STAR-DOC en nuestro video explicativo oficial:
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=uTKZsq6LOeo&t=21s" target="_blank">
+    <img src="https://img.youtube.com/vi/uTKZsq6LOeo/0.jpg" alt="Video Explicativo de STAR-DOC" width="600" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+  </a>
+  <br/>
+  <em>Haz clic en la imagen para ver la demostración interactiva en YouTube.</em>
+</p>
+
 ---
 
 ## 🚀 Características Principales
@@ -71,6 +82,19 @@
 - **Cadena de Custodia** inmutable con bitácora de accesos
 - **Auditoría de Integridad** criptográfica masiva
 
+### 💼 Auditoría Legal & Compliance (SARLAFT/SAGRILAFT)
+- **Cumplimiento Normativo (Superfinanciera / Supersociedades):** Diseñado bajo las circulares externas vigentes del ecosistema de prevención de lavado de activos y financiamiento del terrorismo (SARLAFT y SAGRILAFT de la Superintendencia de Sociedades).
+- **Cruce en Tiempo Real con Entidades del Estado:** Consultas asíncronas sobre Datos Abiertos de Colombia (`datos.gov.co`) mediante SoQL para verificar antecedentes y sanciones en:
+  - **Procuraduría General de la Nación (SIRI):** Inhabilidades disciplinarias y prohibición de contratación estatal.
+  - **Contraloría General de la República:** Boletín de Responsables Fiscales vigentes.
+- **Cruce en Listas Restrictivas Internacionales:** Verificación en caliente (vía cachés locales XML/JSON descargadas automáticamente de fuentes oficiales) contra:
+  - **OFAC (SDN / Clinton List):** Oficina de Control de Activos Extranjeros de los Estados Unidos.
+  - **Consejo de Seguridad de la ONU:** Listas consolidadas internacionales obligatorias.
+- **Motor de Toma de Decisiones y Veredictos:** Categorización automatizada del sujeto en tres estados jurídicos:
+  - `APROBADO`: Habilitado para continuar con el flujo de firmas.
+  - `RIESGO_ALTO`: Hallazgos nacionales que detienen temporalmente el flujo y demandan un proceso de Debida Diligencia Intensificada (DDI) del Oficial de Cumplimiento.
+  - `BLOQUEADO`: Hallazgos en listas restrictivas vinculantes (OFAC/ONU) que congelan de inmediato la transacción y preparan los datos para el Reporte de Operación Sospechosa (ROS) ante la UIAF.
+
 ### 📹 Videoconferencias Legales
 - **Jitsi Meet integrado** para reuniones con clientes
 - **Grabación y transcripción** de audiencias
@@ -99,6 +123,13 @@
 - **Protección SSRF** en webhooks
 - **Validación estricta** con Pydantic v2
 - **Circuit Breaker** para servicios externos (Redis)
+
+### 🌐 Autenticación Web3 Descentralizada (Identity)
+- **Inicio de Sesión sin Contraseñas:** Autenticación criptográfica segura basada exclusivamente en firmas digitales sobre billeteras compatibles con la Ethereum Virtual Machine (EVM) como MetaMask.
+- **Mecanismo de Desafío-Respuesta (Challenge-Response):** 
+  - Generación de un **nonce efímero único** por dirección pública en el servidor, almacenado en **Redis (DB 5)** con expiración automática de 5 minutos.
+  - Firma del nonce por parte del cliente y validación asíncrona en el backend utilizando `eth-account` para recuperar de forma segura la dirección pública original.
+- **Acceso y Gestión de Sesión:** Tras la verificación criptográfica exitosa, se emiten JSON Web Tokens (JWT) robustos y se configuran cookies de seguridad de grado bancario (`HttpOnly`, `Secure` y `SameSite=Lax`) para prevenir XSS y secuestros de sesión.
 
 ### 📱 PWA (Progressive Web App)
 - **Instalable** en dispositivos móviles y escritorio
@@ -366,12 +397,26 @@ Para notificaciones y firma digital:
 
 ## 💻 Uso
 
-### Chat de IA Legal
-Accede a `/ia` para interactuar con el asistente legal. Funcionalidades:
-- **Comandos Slash** (`/generar`, `/analizar`, `/buscar`)
-- **Menciones de Plantillas** (`@contrato_arrendamiento`)
-- **Streaming** de respuestas en tiempo real
-- **Skills especializadas** (auditor de contratos, analista de riesgos, etc.)
+### Chat de IA Legal (LUKA)
+Accede al módulo de Chat IA (`/ia`) para interactuar de forma interactiva con el asistente legal de STAR-DOC. El sistema implementa un patrón de **Progressive Disclosure** a través de un `SkillManager` centralizado que orquesta e inyecta dinámicamente contextos de prompt, herramientas especializadas (Function Calling) y recursos bajo demanda.
+
+#### 🤖 Skills de Agente y Comandos Slash (`/`)
+Puedes activar especializaciones del asistente legal anteponiendo un comando en el chat:
+
+| Comando | Skill de IA | Descripción y Capacidades Técnicas |
+| :--- | :--- | :--- |
+| **`/notebooklm-legal`** | **Investigación RAG Fundamentada** | Conexión directa a la API de **NotebookLM v2.0** para consultar cuadernos jurídicos etiquetados (Constitucional, Laboral, Civil, Comercial, Tributario). Retorna respuestas basadas en fuentes y leyes reales con citaciones exactas verificables para mitigar alucinaciones, y permite adjuntar nuevas fuentes web dinámicamente. |
+| **`/consulta-expedientes`** | **Crawler Judicial en Tiempo Real** | Utiliza un navegador headless automático controlado por **Playwright** con evasión de anti-bots (`playwright-stealth`) para consultar y reportar el estado de expedientes y actuaciones directamente de portales públicos de la Rama Judicial de Colombia, SAMAI del Consejo de Estado y la relatoría de la Corte Constitucional (Sentencias C, T, SU). |
+| **`/entrevistador-pro`** | **Recolección Guiada e Inteligente** | Guía de entrevistas estructuradas (máximo 3 preguntas por turno) para obtener la información precisa de demandas de tutela, derechos de petición o contratos. Valida formatos en caliente (`validar_formato_campo`), calcula plazos procesales (`calcular_termino_legal_colombia`) y genera el `.docx` final tras verificar contra esquemas Pydantic. |
+| **`/analista-riesgos`** | **Análisis Contractual de Riesgos** | Escanea documentos extensos detectando riesgos jurídicos, cláusulas abusivas o de alta contingencia, ofreciendo recomendaciones de redacción alternativa. |
+| **`/auditor-contratos`** | **Auditoría e Integridad de Actas** | Analiza contratos y actas societarias validando vigencias, facultades de representación y consistencia jurídica global. |
+| **`/jurisprudencia-pro`** | **Búsqueda Avanzada de Precedente** | Ejecuta búsquedas en Brave Search API y raspa sentencias hito y de unificación de las Altas Cortes colombianas para fundamentar escritos. |
+| **`/contestador-tutelas`** | **Defensa de Tutelas** | Redacta contestaciones formales a acciones de tutela estructurando argumentos de improcedencia, falta de inmediatez y subsidiariedad. |
+| **`/gestor-liquidaciones`** | **Calculadora Laboral Automatizada** | Liquidación de prestaciones sociales, indemnizaciones por despido sin justa causa y cálculo de aportes a seguridad social bajo ley colombiana. |
+| **`/generador-documentos`** | **Generación por Lenguaje Natural** | Elabora borradores jurídicos instantáneos a partir de las descripciones iniciales provistas por el usuario. |
+
+#### 📋 Menciones de Plantillas (`@`)
+Al escribir el carácter `@` en el área de redacción, el chat desplegará de forma reactiva un menú contextual de autocompletado con las más de **20 plantillas legales** cargadas en el sistema (ej. `@contrato_arrendamiento`). LUKA detectará la selección del usuario y tomará el control para recolectar los campos específicos requeridos por dicha plantilla antes de su renderizado.
 
 ### Generación de Documentos
 Accede a `/editor` para:
