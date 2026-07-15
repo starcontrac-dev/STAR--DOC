@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlmodel import SQLModel, Field
 
@@ -14,4 +14,4 @@ class IPNSKey(SQLModel, table=True):
     is_active: bool = Field(default=True)
     last_published_at: Optional[datetime] = None
     last_republished_at: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

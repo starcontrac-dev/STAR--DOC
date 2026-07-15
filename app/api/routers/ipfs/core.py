@@ -18,10 +18,16 @@ from app.services.ipfs_service import IPFSService
 from app.services.ipfs_integration_service import IPFSIntegrationService
 from app.services.crypto_engine import CryptoEngine, DocClassification
 from app.services.webhook_service import WebhookService
+from app.core.redis_client import redis_manager
+import re
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["IPFS & Web3"])
+
+def is_valid_cid(cid: str) -> bool:
+    """Valida la sintaxis estándar de CIDs de IPFS v0 y v1."""
+    return bool(re.match(r"^(Qm[1-9a-km-zA-HJ-NP-Z]{44}|baf[a-z0-9]{56}|bafy[a-z0-9]{55})$", cid))
 
 async def log_access_helper(
     cid: str,
@@ -57,10 +63,16 @@ async def ipfs_health():
 
     # Cache miss
     kubo = await IPFSService.check_kubo_health()
+    
+    ipns_pubsub = False
+    if kubo.get("online", False):
+        ipns_pubsub = await IPFSService.ensure_ipns_pubsub()
+
     result = {
         "kubo": kubo,
         "service": "ipfs_service",
         "version": "1.0.0",
+        "ipns_pubsub_enabled": ipns_pubsub
     }
 
     # Guardar en Redis
@@ -97,7 +109,15 @@ async def upload_document(
                    f"Opciones: public, confidential, chain_of_custody"
         )
 
-    file_data = await file.read()
+    # Límite estricto de 100MB para prevenir desbordamientos de memoria RAM (OOM)
+    max_bytes = 100 * 1024 * 1024
+    file_data = await file.read(max_bytes + 1)
+    if len(file_data) > max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail="El archivo excede el tamaño máximo permitido de 100MB."
+        )
+
     if not file_data:
         raise HTTPException(status_code=400, detail="El archivo está vacío.")
 
@@ -165,6 +185,9 @@ async def verify_document(
     - **Modo Rápido (deep=False)**: Valida contra los registros cacheados en PostgreSQL y el estado de pinning local en Kubo, sin descargar el archivo.
     - **Modo Profundo (deep=True)**: Descarga el contenido completo desde IPFS y recalcula el hash SHA-256 original (desencriptando si aplica).
     """
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     doc_record = await IPFSIntegrationService.get_document_by_cid(cid, session)
 
     is_valid = False
@@ -234,6 +257,9 @@ async def download_document(
       se desencripta automáticamente al vuelo antes de la entrega (en memoria).
       En caso contrario (o si se pasa decrypt=False), se entrega el sobre encriptado raw por streaming.
     """
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     doc_record = await IPFSIntegrationService.get_document_by_cid(cid, session)
 
     filename = f"{cid[:16]}.bin"
@@ -353,6 +379,9 @@ async def download_document_range(
     if req_offset is None:
         req_offset = 0
 
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     doc_record = await IPFSIntegrationService.get_document_by_cid(cid, session)
     is_encrypted = doc_record and doc_record.is_encrypted
 
@@ -416,6 +445,9 @@ async def decrypt_document_endpoint(
     Desencripta al vuelo un documento confidencial usando la clave resguardada en la BD
     y la sesión del usuario para mostrar su contenido plano en el visor de la Bóveda.
     """
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     doc_record = await IPFSIntegrationService.get_document_by_cid(cid, session)
     if not doc_record:
         raise HTTPException(status_code=404, detail="Documento no registrado.")

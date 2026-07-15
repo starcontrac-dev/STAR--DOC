@@ -2,7 +2,7 @@
 Modelo SQLModel para registrar tareas de subida diferida (colas de reintento) a IPFS.
 Garantiza robustez e integridad ante micro-cortes de red de los nodos IPFS.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlmodel import SQLModel, Field
 
@@ -28,5 +28,5 @@ class IPFSPendingTask(SQLModel, table=True):
     last_error: Optional[str] = Field(default=None, nullable=True)
     
     # Fechas
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

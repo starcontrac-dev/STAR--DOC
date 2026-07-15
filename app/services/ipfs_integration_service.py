@@ -303,8 +303,8 @@ class IPFSIntegrationService:
                 meta_rect = fitz.Rect(20, 95, page_width - 20, 230)
                 cert_page.draw_rect(meta_rect, color=(0.85, 0.85, 0.85), width=1)
                 
-                from datetime import timedelta
-                colombia_now = datetime.utcnow() - timedelta(hours=5)
+                from datetime import timedelta, timezone, datetime
+                colombia_now = datetime.now(timezone.utc) - timedelta(hours=5)
                 meta_text = (
                     f"• Nombre del Archivo: {os.path.basename(pdf_path)}\n"
                     f"• Hash SHA-256 Original: {sha256_original}\n"
@@ -513,6 +513,14 @@ class IPFSIntegrationService:
         return audit_record
 
     @staticmethod
+    async def get_document_by_id(doc_id: int, session: AsyncSession) -> Optional[DocumentIPFS]:
+        """Busca un documento en la base de datos directamente por su identificador numérico ID."""
+        from sqlmodel import select
+        stmt = select(DocumentIPFS).where(DocumentIPFS.id == doc_id)
+        res = await session.execute(stmt)
+        return res.scalar_one_or_none()
+
+    @staticmethod
     async def get_document_by_cid(cid_or_id: str, session: AsyncSession) -> Optional[DocumentIPFS]:
         """Busca un documento en la base de datos por CID (estampado o original) o ID."""
         from sqlmodel import select
@@ -626,9 +634,10 @@ class IPFSIntegrationService:
         return res.scalar_one_or_none()
 
     @staticmethod
-    async def save_ipns_key(key_name: str, ipns_id: str, cid: Optional[str], session: AsyncSession):
-        """Guarda o actualiza el CID de una clave IPNS."""
+    async def save_ipns_key(key_name: str, ipns_id: str, cid: Optional[str], session: AsyncSession, user_id: Optional[int] = None):
+        """Guarda o actualiza el CID de una clave IPNS y registra su historial de versión."""
         from app.models.ipns_key import IPNSKey
+        from app.models.ipns_version_history import IPNSVersionHistory
         from datetime import datetime, timezone
         db_key = await IPFSIntegrationService.get_ipns_key(key_name, session)
         if db_key:
@@ -649,6 +658,16 @@ class IPFSIntegrationService:
             session.add(db_key)
             await session.commit()
             await session.refresh(db_key)
+
+        if cid:
+            history = IPNSVersionHistory(
+                ipns_key_id=db_key.id,
+                cid=cid,
+                user_id=user_id
+            )
+            session.add(history)
+            await session.commit()
+
         return db_key
 
     @staticmethod

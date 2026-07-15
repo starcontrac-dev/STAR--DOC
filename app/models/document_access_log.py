@@ -15,4 +15,4 @@ class DocumentAccessLog(SQLModel, table=True):
     action: str = Field(index=True)  # download | verify | certificate_view
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
-    accessed_at: datetime = Field(default_factory=datetime.utcnow)
+    accessed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

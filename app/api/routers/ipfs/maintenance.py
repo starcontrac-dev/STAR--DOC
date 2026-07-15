@@ -1,6 +1,7 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
+import re
+from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks, Response, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
@@ -13,6 +14,10 @@ from app.services.webhook_service import WebhookService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["IPFS & Web3"])
+
+def is_valid_cid(cid: str) -> bool:
+    """Valida la sintaxis estándar de CIDs de IPFS v0 y v1."""
+    return bool(re.match(r"^(Qm[1-9a-km-zA-HJ-NP-Z]{44}|baf[a-z0-9]{56}|bafy[a-z0-9]{55})$", cid))
 
 @router.get("/pins", summary="Listar CIDs pineados en nodo local")
 async def list_pins(current_user: User = Depends(is_admin_user)):
@@ -79,10 +84,14 @@ async def trigger_gc(
 @router.delete("/{cid}", summary="Despinear / archivar documento de IPFS")
 async def unpin_document(
     cid: str,
+    background_tasks: BackgroundTasks = None,
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(is_admin_user)
 ):
     """Despinea un documento de Kubo local y actualiza su estado en base de datos."""
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     doc_record = await IPFSIntegrationService.get_document_by_cid(cid, session)
     if not doc_record:
         raise HTTPException(status_code=404, detail="Documento no registrado en la base de datos.")
@@ -104,22 +113,21 @@ async def unpin_document(
             session=session
         )
 
-        background_tasks = BackgroundTasks()
-        background_tasks.add_task(
-            WebhookService.trigger_event,
-            "archive",
-            {
-                "cid": cid,
-                "filename": doc_record.original_filename,
-                "user_id": current_user.id
-            }
-        )
+        if background_tasks:
+            background_tasks.add_task(
+                WebhookService.trigger_event,
+                "archive",
+                {
+                    "cid": cid,
+                    "filename": doc_record.original_filename,
+                    "user_id": current_user.id
+                }
+            )
         
         return {
             "status": "success",
             "cid": cid,
-            "detail": "Documento despineado localmente y archivado correctamente.",
-            "background": background_tasks
+            "detail": "Documento despineado localmente y archivado correctamente."
         }
     except Exception as e:
         logger.error(f"Error al despinear CID {cid}: {e}")
@@ -135,6 +143,9 @@ async def sync_document_pinata(
     Intenta pinear en Pinata Cloud un documento que falló previamente o no se subió
     debido a la estrategia híbrida, para garantizar redundancia en la red.
     """
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     doc_record = await IPFSIntegrationService.get_document_by_cid(cid, session)
     if not doc_record:
         raise HTTPException(status_code=404, detail="Documento no registrado en la base de datos.")
@@ -152,4 +163,38 @@ async def sync_document_pinata(
         }
     except Exception as e:
         logger.error(f"Error al sincronizar con Pinata para CID {cid}: {e}")
-        raise HTTPException(status_code=500, detail=f"No se pudo sincronizar el documento con Pinata: {e}")
+        raise HTTPException(status_code=500, detail=f"No se pudo sincronizar con Pinata: {e}")
+
+@router.get("/export-car/{cid}", summary="Exportar DAG completo a archivo CAR")
+async def export_dag_car(cid: str, current_user: User = Depends(is_admin_user)):
+    """Exporta un CID y todo su árbol Merkle DAG en formato CAR."""
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+    try:
+        car_content = await IPFSService.dag_export(cid)
+        return Response(
+            content=car_content,
+            media_type="application/vnd.ipld.car",
+            headers={"Content-Disposition": f"attachment; filename={cid}.car"}
+        )
+    except Exception as e:
+        logger.error(f"Error al exportar CAR para CID {cid}: {e}")
+        raise HTTPException(status_code=500, detail=f"No se pudo exportar el CAR: {e}")
+
+@router.post("/import-car", summary="Importar y pinear archivo CAR en Kubo")
+async def import_dag_car(
+    file: UploadFile = File(...),
+    current_user: User = Depends(is_admin_user)
+):
+    """Importa un archivo CAR a Kubo local y pin-roots automático."""
+    car_data = await file.read()
+    try:
+        res = await IPFSService.dag_import(car_data)
+        return {
+            "status": "success", 
+            "roots": res.get("RootCids") or res.get("Roots"), 
+            "detail": "Archivo CAR importado y anclado con éxito."
+        }
+    except Exception as e:
+        logger.error(f"Error al importar archivo CAR: {e}")
+        raise HTTPException(status_code=500, detail=f"No se pudo importar el CAR: {e}")

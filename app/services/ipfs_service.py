@@ -8,6 +8,7 @@ import httpx
 
 from app.services.crypto_engine import CryptoEngine, DocClassification
 from app.core.config import settings
+from app.core.redis_client import redis_manager
 
 logger = logging.getLogger(__name__)
 
@@ -446,7 +447,17 @@ class IPFSService:
 
     @staticmethod
     async def ipns_resolve(ipns_name: str) -> str:
-        """Resuelve un nombre IPNS mutable a su CID de destino inmutable actual."""
+        """Resuelve un nombre IPNS mutable a su CID de destino inmutable actual, usando caché de Redis."""
+        cache_key = f"ipns:resolve:{ipns_name}"
+        try:
+            pool = await redis_manager.get_pool(db=2)
+            cached = await pool.get(cache_key)
+            if cached:
+                logger.info(f"Resolución IPNS resuelta desde caché Redis: {ipns_name} -> {cached}")
+                return cached.decode("utf-8") if isinstance(cached, bytes) else str(cached)
+        except Exception as e:
+            logger.warning(f"Error al leer caché de resolución IPNS: {e}")
+
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
                 f"{KUBO_RPC_URL}/api/v0/name/resolve",
@@ -454,7 +465,36 @@ class IPFSService:
             )
             resp.raise_for_status()
             data = resp.json()
-            return data["Path"]
+            resolved_path = data["Path"]
+
+            # Guardar en caché Redis por 30 segundos
+            try:
+                pool = await redis_manager.get_pool(db=2)
+                await pool.setex(cache_key, 30, resolved_path)
+            except Exception as e:
+                logger.warning(f"Error al guardar caché de resolución IPNS: {e}")
+
+            return resolved_path
+
+    @staticmethod
+    async def ensure_ipns_pubsub() -> bool:
+        """Configura el daemon local Kubo para que use resolvedor PubSub de IPNS."""
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                # Configurar Ipns.UsePubsub = true
+                resp = await client.post(
+                    f"{KUBO_RPC_URL}/api/v0/config",
+                    params={"arg": "Ipns.UsePubsub", "arg": "true", "bool": "true"}
+                )
+                if resp.status_code == 200:
+                    logger.info("IPNS sobre PubSub configurado exitosamente en Kubo.")
+                    return True
+                else:
+                    logger.warning(f"Kubo rechazó configurar IPNS PubSub: HTTP {resp.status_code}")
+                    return False
+        except Exception as e:
+            logger.warning(f"No se pudo asegurar la configuración IPNS PubSub en Kubo: {e}")
+            return False
 
     @staticmethod
     async def ipns_list_keys() -> dict:
@@ -465,4 +505,30 @@ class IPFSService:
             )
             resp.raise_for_status()
             return resp.json()
+
+    # ── CAR (Content Archive) Import/Export ──
+
+    @staticmethod
+    async def dag_export(cid: str) -> bytes:
+        """Exporta un DAG completo por su CID raíz a un archivo CAR (Content Archive)."""
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            resp = await client.post(
+                f"{KUBO_RPC_URL}/api/v0/dag/export",
+                params={"arg": cid}
+            )
+            resp.raise_for_status()
+            return resp.content
+
+    @staticmethod
+    async def dag_import(car_data: bytes) -> dict:
+        """Importa un archivo CAR (Content Archive) y pinea recursivamente sus raíces."""
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            resp = await client.post(
+                f"{KUBO_RPC_URL}/api/v0/dag/import",
+                files={"file": ("archive.car", car_data)},
+                params={"pin-roots": "true"}
+            )
+            resp.raise_for_status()
+            return resp.json()
+
 

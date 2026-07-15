@@ -13,6 +13,7 @@ from .document_ipfs import DocumentIPFS
 from .ipfs_audit import IPFSAudit
 from .document_access_log import DocumentAccessLog
 from .ipns_key import IPNSKey
+from .ipns_version_history import IPNSVersionHistory
 from .webhook_subscription import WebhookSubscription
 from .ipfs_pending_task import IPFSPendingTask
 

@@ -46,7 +46,7 @@ class DocumentIPFS(SQLModel, table=True):
     blockchain_network: Optional[str] = None
 
     # ── Timestamps ──
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     verified_at: Optional[datetime] = None
 
     # ── URLs de acceso ──

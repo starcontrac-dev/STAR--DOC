@@ -17,4 +17,4 @@ class IPFSAudit(SQLModel, table=True):
     # IDs de los documentos pertenecientes a esta auditoría (guardados como JSON)
     document_ids: List[int] = Field(default_factory=list, sa_column=Column(JSON))
     
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

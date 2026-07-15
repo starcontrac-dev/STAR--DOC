@@ -98,4 +98,10 @@ test/
 
 # --- NODE MODULES (si se instalan) ---
 node_modules/
+
+# --- IPFS BACKUPS & KEYS ---
+ipfs-23.txt
+ipfs-*.txt
+*config.txt
+
 package-lock.json

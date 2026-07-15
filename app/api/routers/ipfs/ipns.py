@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks
@@ -15,6 +16,10 @@ from app.services.webhook_service import WebhookService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["IPFS & Web3"])
+
+def is_valid_cid(cid: str) -> bool:
+    """Valida la sintaxis estándar de CIDs de IPFS v0 y v1."""
+    return bool(re.match(r"^(Qm[1-9a-km-zA-HJ-NP-Z]{44}|baf[a-z0-9]{56}|bafy[a-z0-9]{55})$", cid))
 
 @router.post("/ipns/key", summary="Generar clave IPNS para versionado")
 async def create_ipns_key(
@@ -51,6 +56,7 @@ async def create_ipns_key(
 async def publish_ipns(
     key_name: str = Query(..., description="Nombre de la clave IPNS generada previamente"),
     cid: str = Query(..., description="El CID inmutable del nuevo contrato/documento"),
+    background_tasks: BackgroundTasks = None,
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(is_admin_user)
 ):
@@ -58,6 +64,9 @@ async def publish_ipns(
     Apunta el nombre IPNS mutable (representado por la clave) al CID inmutable especificado.
     Registra el historial y actualiza el CID actual de la clave IPNS en PostgreSQL.
     """
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     try:
         res = await IPFSService.ipns_publish(cid, key_name)
         ipns_name = res.get("Name")
@@ -66,27 +75,27 @@ async def publish_ipns(
             key_name=key_name,
             ipns_id=ipns_name,
             cid=cid,
-            session=session
+            session=session,
+            user_id=current_user.id
         )
             
-        background_tasks = BackgroundTasks()
-        background_tasks.add_task(
-            WebhookService.trigger_event,
-            "publish_ipns",
-            {
-                "key_name": key_name,
-                "ipns_address": ipns_name,
-                "cid": cid,
-                "user_id": current_user.id
-            }
-        )
-
+        if background_tasks:
+            background_tasks.add_task(
+                WebhookService.trigger_event,
+                "publish_ipns",
+                {
+                    "key_name": key_name,
+                    "ipns_address": ipns_name,
+                    "cid": cid,
+                    "user_id": current_user.id
+                }
+            )
+ 
         return {
             "status": "published",
             "ipns_name": ipns_name,
             "target_cid": cid,
-            "detail": f"Contrato publicado en IPNS mutable exitosamente.",
-            "background": background_tasks
+            "detail": f"Contrato publicado en IPNS mutable exitosamente."
         }
     except Exception as e:
         logger.error(f"Error al publicar en IPNS: {e}")
@@ -144,3 +153,37 @@ async def list_ipns_keys(
     except Exception as e:
         logger.error(f"Error al listar claves IPNS de BD: {e}")
         raise HTTPException(status_code=500, detail=f"No se pudo listar claves IPNS: {e}")
+
+@router.get("/ipns/history/{key_name}", summary="Obtener historial de versiones de una clave IPNS")
+async def get_ipns_history(
+    key_name: str,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Obtiene la bitácora completa de versiones históricas (CIDs publicados) 
+    para una clave mutable de IPNS determinada.
+    """
+    db_key = await IPFSIntegrationService.get_ipns_key(key_name, session)
+    if not db_key:
+        raise HTTPException(status_code=404, detail="Clave IPNS no encontrada en el sistema.")
+
+    from sqlmodel import select
+    from app.models.ipns_version_history import IPNSVersionHistory
+    stmt = select(IPNSVersionHistory).where(IPNSVersionHistory.ipns_key_id == db_key.id).order_by(IPNSVersionHistory.published_at.desc())
+    res = await session.execute(stmt)
+    history = res.scalars().all()
+    
+    return {
+        "key_name": key_name,
+        "ipns_id": db_key.ipns_id,
+        "history": [
+            {
+                "id": h.id,
+                "cid": h.cid,
+                "published_at": h.published_at.isoformat(),
+                "user_id": h.user_id
+            }
+            for h in history
+        ]
+    }

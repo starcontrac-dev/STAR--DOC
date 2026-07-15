@@ -4,6 +4,7 @@ import re
 import mimetypes
 import io
 import zipfile
+import html
 from datetime import datetime, timezone
 from typing import Optional, List
 
@@ -28,6 +29,16 @@ from app.core.limiter import limiter
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["IPFS & Web3"])
+
+def is_valid_cid(cid: str) -> bool:
+    """Valida la sintaxis estándar de CIDs de IPFS v0 y v1."""
+    return bool(re.match(r"^(Qm[1-9a-km-zA-HJ-NP-Z]{44}|baf[a-z0-9]{56}|bafy[a-z0-9]{55})$", cid))
+
+def is_valid_id_or_cid(val: str) -> bool:
+    """Retorna True si es un ID numérico entero o un CID con sintaxis válida."""
+    if val.isdigit():
+        return True
+    return is_valid_cid(val)
 
 class PackAuditRequest(BaseModel):
     name: str
@@ -63,6 +74,9 @@ async def get_html_certificate(
     Genera un documento HTML standalone con la prueba de existencia del archivo,
     sus huellas criptográficas SHA256 y enlaces a los gateways IPFS.
     """
+    if not is_valid_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de hash CID inválido.")
+
     doc_record = await IPFSIntegrationService.get_document_by_cid(cid, session)
     if not doc_record:
         raise HTTPException(status_code=404, detail="Registro no encontrado para el CID especificado.")
@@ -75,6 +89,10 @@ async def get_html_certificate(
     from datetime import timedelta
     created_at_local = (doc_record.created_at - timedelta(hours=5)) if doc_record.created_at else None
     created_at_str = created_at_local.strftime('%Y-%m-%d %H:%M:%S COT') if created_at_local else 'N/A'
+
+    # Sanitizar variables de texto libre interpoladas en HTML para evitar inyección XSS
+    safe_filename = html.escape(doc_record.original_filename or "documento")
+    safe_classification = html.escape(doc_record.classification or "public")
 
     html_content = f"""
     <!DOCTYPE html>
@@ -110,9 +128,9 @@ async def get_html_certificate(
             
             <h2 class="section-title">Detalles del Documento</h2>
             <table>
-                <tr><th>Nombre Original</th><td>{doc_record.original_filename}</td></tr>
+                <tr><th>Nombre Original</th><td>{safe_filename}</td></tr>
                 <tr><th>Tamaño</th><td>{doc_record.file_size_bytes} bytes</td></tr>
-                <tr><th>Clasificación</th><td>{doc_record.classification.upper()}</td></tr>
+                <tr><th>Clasificación</th><td>{safe_classification.upper()}</td></tr>
                 <tr><th>Fecha de Anclaje</th><td>{created_at_str}</td></tr>
             </table>
 
@@ -208,6 +226,9 @@ async def get_audit_logs(
     Obtiene los registros de acceso e integridad (cadena de custodia) para un CID
     o para una auditoría específica (buscando logs de sus documentos constitutivos).
     """
+    if not is_valid_id_or_cid(id_or_cid):
+        raise HTTPException(status_code=400, detail="Formato de ID o hash CID inválido.")
+
     audit = await IPFSIntegrationService.get_audit_by_cid_or_id(id_or_cid, session)
     cids_to_query = []
     audit_name = None
@@ -218,7 +239,7 @@ async def get_audit_logs(
         if audit.document_ids:
             # Recuperar documentos y agregar CIDs
             for doc_id in audit.document_ids:
-                doc = await IPFSIntegrationService.get_document_by_cid(str(doc_id), session)
+                doc = await IPFSIntegrationService.get_document_by_id(doc_id, session)
                 if doc:
                     cids_to_query.append(doc.ipfs_cid)
     else:
@@ -262,6 +283,9 @@ async def get_audit_details(
     Obtiene la información de una auditoría y la lista de todos los documentos
     asociados con sus respectivos metadatos criptográficos y de integridad.
     """
+    if not is_valid_id_or_cid(id_or_cid):
+        raise HTTPException(status_code=400, detail="Formato de ID o hash CID inválido.")
+
     audit = await IPFSIntegrationService.get_audit_by_cid_or_id(id_or_cid, session)
     if not audit:
         raise HTTPException(status_code=404, detail="Expediente de auditoría no encontrado.")
@@ -269,7 +293,7 @@ async def get_audit_details(
     documents = []
     if audit.document_ids:
         for doc_id in audit.document_ids:
-            d = await IPFSIntegrationService.get_document_by_cid(str(doc_id), session)
+            d = await IPFSIntegrationService.get_document_by_id(doc_id, session)
             if d:
                 documents.append({
                     "id": d.id,
@@ -303,6 +327,9 @@ async def download_pack(
     Descarga un expediente completo de auditoría en un archivo ZIP.
     Incluye todos los documentos asociados y un certificado de auditoría en HTML.
     """
+    if not is_valid_id_or_cid(cid):
+        raise HTTPException(status_code=400, detail="Formato de ID o hash CID inválido.")
+
     audit = await IPFSIntegrationService.get_audit_by_cid_or_id(cid, session)
     if not audit:
         raise HTTPException(
@@ -316,7 +343,7 @@ async def download_pack(
 
     documents = []
     for doc_id in doc_ids:
-        doc = await IPFSIntegrationService.get_document_by_cid(str(doc_id), session)
+        doc = await IPFSIntegrationService.get_document_by_id(doc_id, session)
         if doc:
             documents.append(doc)
 
@@ -362,11 +389,13 @@ async def download_pack(
         
         doc_rows = ""
         for d in doc_meta_list:
-            status_badge = f'<span class="badge {d["classification"]}">{d["classification"].upper()}</span>'
+            safe_filename = html.escape(d['filename'])
+            safe_class = html.escape(d['classification'])
+            status_badge = f'<span class="badge {safe_class}">{safe_class.upper()}</span>'
             dec_status = "Desencriptado" if d["decrypted"] else ("Original (Público)" if d["classification"] == "public" else "Cifrado")
             doc_rows += f"""
             <tr>
-                <td>{d['filename']}</td>
+                <td>{safe_filename}</td>
                 <td class="mono">{d['cid']}</td>
                 <td class="mono">{d['sha256']}</td>
                 <td>{d['size']} B</td>
@@ -499,7 +528,7 @@ async def download_pack(
         <div class="meta-box">
             <div class="meta-grid">
                 <div class="meta-item">
-                    <strong>Nombre del Expediente:</strong> {audit.name}
+                    <strong>Nombre del Expediente:</strong> {html.escape(audit.name)}
                 </div>
                 <div class="meta-item">
                     <strong>CID del Paquete (IPFS):</strong> <span class="mono">{cid}</span>
