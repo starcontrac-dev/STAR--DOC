@@ -69,31 +69,40 @@ class LegalIngestionService:
         
         ingested_count = 0
         
-        # 5. Iterar e insertar con embeddings
+        # 5. Filtrar duplicados y preparar lote
+        unique_items = []
         for item in chunks_to_ingest:
             source = item["source"]
             citation = item["citation"]
-            content = item["content"]
-            category = item["category"]
             
             # Verificar si ya existe para evitar duplicación
             exists = await LegalIngestionService.chunk_exists(session, source, citation)
             if exists:
                 logger.info(f"Saltando chunk duplicado: '{source}' - '{citation}'")
                 continue
+            unique_items.append(item)
                 
+        # 6. Insertar en lote usando add_chunks_batch
+        if unique_items:
             try:
-                # add_chunk genera el embedding automáticamente e inserta
-                await RAGService.add_chunk(
-                    session=session,
-                    source=source,
-                    citation=citation,
-                    content=content,
-                    category=category
-                )
-                ingested_count += 1
+                inserted_chunks = await RAGService.add_chunks_batch(session, unique_items)
+                ingested_count = len(inserted_chunks)
             except Exception as e:
-                logger.error(f"Error ingiriendo chunk '{source}' - '{citation}': {e}")
-                
+                logger.error(f"Error en ingesta por lote: {e}. Intentando fallback individual...")
+                # Fallback individual ante fallos en lote
+                for item in unique_items:
+                    try:
+                        await RAGService.add_chunk(
+                            session=session,
+                            source=item["source"],
+                            citation=item["citation"],
+                            content=item["content"],
+                            category=item["category"]
+                        )
+                        ingested_count += 1
+                    except Exception as ex:
+                        logger.error(f"Error en fallback individual para '{item['source']}': {ex}")
+                        
         logger.info(f"Ingesta de conocimiento legal completada. {ingested_count} nuevos registros indexados.")
         return ingested_count
+

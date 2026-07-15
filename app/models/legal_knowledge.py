@@ -1,7 +1,7 @@
 from typing import Optional, Any
 from pgvector.sqlalchemy import Vector
 from sqlmodel import SQLModel, Field
-from sqlalchemy import Column
+from sqlalchemy import Column, Index
 
 class LegalKnowledgeChunk(SQLModel, table=True):
     __tablename__ = "legal_knowledge_chunks"
@@ -12,5 +12,17 @@ class LegalKnowledgeChunk(SQLModel, table=True):
     content: str  # Texto plano del fragmento
     category: str = Field(index=True)  # Ej: 'constitucional', 'civil', 'comercial', 'consumidor', 'administrativo', 'jurisprudencia'
     
-    # Columna Vectorial de 3072 dimensiones para embeddings de Gemini
-    embedding: Any = Field(sa_column=Column(Vector(3072), nullable=False))
+    # Columna Vectorial de 1536 dimensiones para embeddings de Gemini (Matryoshka)
+    embedding: Any = Field(sa_column=Column(Vector(1536), nullable=False))
+
+    __table_args__ = (
+        Index(
+            'hnsw_legal_embedding_idx',
+            'embedding',
+            postgresql_using='hnsw',
+            postgresql_ops={'embedding': 'vector_cosine_ops'},
+            postgresql_with={'m': 16, 'ef_construction': 64}
+        ),
+    )
+
+

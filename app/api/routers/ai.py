@@ -100,6 +100,81 @@ async def templates_autocomplete(authorization: Optional[str] = Header(None)):
         logger.error(f"Error listando plantillas para autocomplete: {e}")
         return {"templates": [], "error": str(e)}
 
+async def run_llm_rerank(query: str, candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Reranker de LLM de un solo paso (Single-Turn Reranker).
+    Evalúa la relevancia semántica de los candidatos del RAG con respecto a la consulta del usuario
+    y devuelve los 3 fragmentos jurídicamente más precisos.
+    """
+    if not candidates:
+        return []
+        
+    prompt = (
+        "Actúas como un clasificador de relevancia de alta precisión para un sistema RAG de Derecho Colombiano.\n"
+        f"Consulta del Usuario: \"{query}\"\n\n"
+        "A continuación tienes una lista de fragmentos legales recuperados. Evalúa cuáles de ellos "
+        "responden de forma directa, útil y precisa a la consulta. Selecciona únicamente los 3 más relevantes "
+        "y ordénalos de mejor a peor según su pertinencia legal.\n\n"
+    )
+    
+    for idx, c in enumerate(candidates):
+        prompt += (
+            f"ID de Fragmento: {idx}\n"
+            f"Fuente: {c['source']}\n"
+            f"Cita: {c['citation']}\n"
+            f"Contenido: {c['content']}\n"
+            "---\n"
+        )
+        
+    prompt += (
+        "\nResponde estrictamente en formato JSON con la siguiente estructura, sin textos adicionales ni bloques markdown:\n"
+        "{\n"
+        "  \"selected_ids\": [lista de números de ID seleccionados en orden de relevancia]\n"
+        "}"
+    )
+    
+    try:
+        from app.services.ai_service import ai_service
+        payload = {
+            "contents": [
+                {"role": "user", "parts": [{"text": prompt}]}
+            ],
+            "generationConfig": {
+                "temperature": 0.1,
+                "responseMimeType": "application/json"
+            }
+        }
+        
+        # Llamar a Gemini (usamos timeout de 10s para el reranking rápido)
+        response = await ai_service.generate_content(payload=payload, timeout=12.0)
+        candidates_list = response.get("candidates", [])
+        if not candidates_list:
+            logger.warning("Reranker de LLM: No se recibieron candidatos de Gemini. Aplicando fallback de similitud.")
+            return candidates[:3]
+            
+        text_resp = candidates_list[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+        res_json = json.loads(text_resp)
+        selected_ids = res_json.get("selected_ids", [])
+        
+        reranked = []
+        for sid in selected_ids:
+            try:
+                idx = int(sid)
+                if 0 <= idx < len(candidates):
+                    reranked.append(candidates[idx])
+            except Exception as e:
+                logger.warning(f"Reranker: ID de fragmento inválido '{sid}': {e}")
+                
+        if not reranked:
+            logger.warning("Reranker: No se seleccionó ningún ID válido. Aplicando fallback.")
+            return candidates[:3]
+            
+        logger.info(f"Reranker de LLM: Exitoso. Seleccionados {len(reranked)} fragmentos en orden de relevancia.")
+        return reranked[:3]
+    except Exception as e:
+        logger.error(f"Error en LLM Reranker: {e}. Aplicando fallback de similitud coseno.")
+        return candidates[:3]
+
 @router.post("/api/gemini")
 @limiter.limit("30/minute")
 async def proxy_gemini(
@@ -132,7 +207,7 @@ async def proxy_gemini(
     import datetime
     current_date = datetime.datetime.now().strftime("%Y-%m-%d")
     
-    # --- RAG CONTEXT (pgvector) ---
+    # --- RAG CONTEXT (pgvector + LLM Reranker) ---
     rag_context = ""
     try:
         from app.database import async_session_maker
@@ -140,16 +215,20 @@ async def proxy_gemini(
         
         # Ejecutamos la búsqueda vectorial semántica de forma asíncrona abriendo una sesión ligera
         async with async_session_maker() as db_session:
-            # Buscamos similitud coseno >= 0.65 (umbral balanceado) y limitamos a 3 fragmentos
-            rag_results = await RAGService.search_semantic(
+            # Recuperamos una muestra más amplia (10 candidatos) con un umbral ligeramente menor (0.55)
+            candidates = await RAGService.search_semantic(
                 session=db_session,
                 query=gemini_request.prompt,
-                threshold=0.65,
-                limit=3
+                threshold=0.55,
+                limit=10
             )
             
-            if rag_results:
-                logger.info(f"RAG pgvector: Encontrados {len(rag_results)} fragmentos legales relevantes.")
+            if candidates:
+                logger.info(f"RAG pgvector: Encontrados {len(candidates)} candidatos iniciales. Lanzando Reranker...")
+                # Aplicamos el filtro de re-ranking contextual con Gemini
+                rag_results = await run_llm_rerank(gemini_request.prompt, candidates)
+                
+                logger.info(f"RAG Reranker: Seleccionados {len(rag_results)} fragmentos legales definitivos.")
                 formatted_chunks = []
                 for idx, r in enumerate(rag_results, 1):
                     formatted_chunks.append(

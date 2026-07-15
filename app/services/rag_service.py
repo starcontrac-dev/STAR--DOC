@@ -16,10 +16,11 @@ class RAGService:
     de normatividad y jurisprudencia usando pgvector en PostgreSQL.
     """
     
+    
     @staticmethod
     async def get_embedding(text_content: str) -> List[float]:
         """
-        Genera el vector de embeddings (3072 dimensiones) usando gemini-embedding-2 de Gemini API.
+        Genera el vector de embeddings (1536 dimensiones) usando gemini-embedding-2 de Gemini API.
         """
         api_key = settings.GEMINI_API_KEY or (settings.GEMINI_API_KEYS[0] if settings.GEMINI_API_KEYS else None)
         if not api_key:
@@ -30,7 +31,8 @@ class RAGService:
             "model": "models/gemini-embedding-2",
             "content": {
                 "parts": [{"text": text_content}]
-            }
+            },
+            "outputDimensionality": 1536
         }
         
         async with httpx.AsyncClient() as client:
@@ -44,6 +46,43 @@ class RAGService:
             if not vector:
                 raise RuntimeError("La API de Gemini retornó una estructura de vector vacía o inválida.")
             return vector
+
+    @staticmethod
+    async def get_embeddings_batch(text_contents: List[str]) -> List[List[float]]:
+        """
+        Genera una lista de vectores de embeddings (1536 dimensiones) en lote
+        usando models/gemini-embedding-2 de Gemini API.
+        """
+        api_key = settings.GEMINI_API_KEY or (settings.GEMINI_API_KEYS[0] if settings.GEMINI_API_KEYS else None)
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY no configurada en settings.")
+            
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:batchEmbedContents?key={api_key}"
+        
+        requests = []
+        for text in text_contents:
+            requests.append({
+                "model": "models/gemini-embedding-2",
+                "content": {
+                    "parts": [{"text": text}]
+                },
+                "outputDimensionality": 1536
+            })
+            
+        payload = {"requests": requests}
+        
+        async with httpx.AsyncClient() as client:
+            res = await client.post(url, json=payload, timeout=60.0)
+            if res.status_code != 200:
+                logger.error(f"Error en Gemini Batch Embedding API ({res.status_code}): {res.text}")
+                raise RuntimeError(f"Error generando batch embeddings en Gemini API: {res.text}")
+                
+            data = res.json()
+            embeddings_list = data.get("embeddings", [])
+            if not embeddings_list:
+                raise RuntimeError("La API de Gemini retornó una estructura de batch embeddings vacía o inválida.")
+                
+            return [e.get("values", []) for e in embeddings_list]
 
     @staticmethod
     async def add_chunk(
@@ -69,6 +108,41 @@ class RAGService:
         await session.refresh(chunk)
         logger.info(f"Chunk legal insertado exitosamente: id={chunk.id}, source='{source}', citation='{citation}'")
         return chunk
+
+    @staticmethod
+    async def add_chunks_batch(
+        session: AsyncSession,
+        items: List[Dict[str, str]]
+    ) -> List[LegalKnowledgeChunk]:
+        """
+        Genera embeddings e inserta múltiples fragmentos legales en un único lote transaccional.
+        'items' debe ser una lista de dicts con claves: 'source', 'citation', 'content', 'category'.
+        """
+        if not items:
+            return []
+            
+        contents = [item["content"] for item in items]
+        vectors = await RAGService.get_embeddings_batch(contents)
+        
+        chunks = []
+        for idx, item in enumerate(items):
+            chunk = LegalKnowledgeChunk(
+                source=item["source"],
+                citation=item["citation"],
+                content=item["content"],
+                category=item["category"],
+                embedding=vectors[idx]
+            )
+            session.add(chunk)
+            chunks.append(chunk)
+            
+        await session.commit()
+        for chunk in chunks:
+            await session.refresh(chunk)
+            
+        logger.info(f"Se insertaron {len(chunks)} chunks legales en lote exitosamente.")
+        return chunks
+
 
     @staticmethod
     async def search_semantic(
