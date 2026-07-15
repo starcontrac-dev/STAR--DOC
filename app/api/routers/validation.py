@@ -6,7 +6,7 @@ import json
 import hashlib
 from typing import Optional
 
-import pandas as pd
+import polars as pl
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -80,8 +80,11 @@ async def validate_template_and_data(
         content = await data_file.read()
         def read_headers():
             f = io.BytesIO(content)
-            df = pd.read_csv(f) if data_file.filename.endswith('.csv') else pd.read_excel(f)
-            return df.columns.tolist()
+            if data_file.filename.endswith('.csv'):
+                df = pl.read_csv(f)
+            else:
+                df = pl.read_excel(f, engine="calamine")
+            return df.columns
         data_headers = await asyncio.to_thread(read_headers)
     elif google_sheet_id:
         creds = await get_creds_for_user(current_user, session)

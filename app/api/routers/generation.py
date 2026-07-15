@@ -8,7 +8,7 @@ import shutil
 import logging
 from typing import Optional
 
-import pandas as pd
+import polars as pl
 import jinja2
 from docxtpl import DocxTemplate
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, Query
@@ -268,8 +268,11 @@ async def generate_batch(
             raise HTTPException(400, "Falta archivo datos.")
         content = await df_file.read()
         f_io = io.BytesIO(content)
-        df = pd.read_csv(f_io) if df_file.filename.endswith('.csv') else pd.read_excel(f_io)
-        contexts = df.to_dict('records')
+        if df_file.filename.endswith('.csv'):
+            df = pl.read_csv(f_io)
+        else:
+            df = pl.read_excel(f_io, engine="calamine")
+        contexts = df.to_dicts()
     elif data_type == 'google_sheet':
         sid = form_data.get('google_sheet_id')
         if not sid:

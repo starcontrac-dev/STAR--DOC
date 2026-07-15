@@ -48,7 +48,8 @@ python-dotenv==1.0.1
 # ⚙️ UTILS & SCHEDULING
 # ==========================================
 APScheduler==3.10.4
-pandas==2.2.3
+polars==1.21.0
+fastexcel==0.11.5
 workdays==1.4
 holidays==0.94
 tenacity==9.0.0

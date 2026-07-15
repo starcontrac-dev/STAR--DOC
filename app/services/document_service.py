@@ -17,7 +17,7 @@ from jinja2 import meta
 from jinja2.sandbox import SandboxedEnvironment
 import locale
 from datetime import datetime
-import pandas as pd
+# Sin dependencias de Pandas en document_service.py
 from docxtpl import DocxTemplate
 from fastapi import HTTPException
 
