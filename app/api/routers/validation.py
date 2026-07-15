@@ -114,6 +114,53 @@ async def validate_template_and_data(
     missing = sorted(list(template_vars_set - data_headers_set))
     unused = sorted(list(data_headers_set - template_vars_set))
 
+    # 4. Auditoría Semántica de Calidad de Datos con Polars
+    data_quality_errors = []
+    invalid_rows_count = 0
+    
+    if data_file and len(missing) == 0:
+        try:
+            # Leer el archivo de datos usando Polars de forma aislada
+            f_io = io.BytesIO(content)
+            if data_file.filename.endswith('.csv'):
+                df = pl.read_csv(f_io)
+            else:
+                df = pl.read_excel(f_io, engine="calamine")
+                
+            # Buscar si existe un esquema de validación Pydantic para esta plantilla
+            from app.services.validation_service import TEMPLATE_SCHEMA_MAP
+            schema_class = None
+            filename_lower = template_filename.lower()
+            for key, model in TEMPLATE_SCHEMA_MAP.items():
+                if key in filename_lower:
+                    schema_class = model
+                    break
+                    
+            if schema_class:
+                # Extraer variables mandatorias del esquema
+                required_fields = [
+                    name for name, info in schema_class.model_fields.items()
+                    if info.is_required() and name in df.columns
+                ]
+                
+                # A. Validar nulos o cadenas vacías
+                for field in required_fields:
+                    null_mask = pl.col(field).is_null() | (pl.col(field).cast(pl.String).str.strip_chars() == "")
+                    null_count = df.filter(null_mask).height
+                    if null_count > 0:
+                        data_quality_errors.append(f"Columna '{field}': se detectaron {null_count} celdas vacías o nulas.")
+                        invalid_rows_count += null_count
+                        
+                # B. Validar formato de correos electrónicos
+                if "email" in df.columns:
+                    email_mask = ~pl.col("email").cast(pl.String).str.contains(r"^[^@]+@[^@]+\.[^@]+$") & pl.col("email").is_not_null()
+                    bad_emails = df.filter(email_mask).height
+                    if bad_emails > 0:
+                        data_quality_errors.append(f"Columna 'email': se detectaron {bad_emails} registros con formato inválido.")
+                        invalid_rows_count += bad_emails
+        except Exception as profiling_error:
+            logger.warning(f"No se pudo completar el análisis de calidad de datos: {profiling_error}")
+
     return ValidationResultResponse(
         success=True,
         template_filename=template_filename,
@@ -121,7 +168,9 @@ async def validate_template_and_data(
         data_headers=sorted(list(data_headers_set)),
         missing_in_data=missing,
         unused_in_data=unused,
-        match=len(missing) == 0
+        match=len(missing) == 0 and len(data_quality_errors) == 0,
+        data_quality_errors=data_quality_errors,
+        invalid_rows_count=invalid_rows_count
     )
 
 

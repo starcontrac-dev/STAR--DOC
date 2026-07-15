@@ -99,6 +99,8 @@ class ValidationResultResponse(BaseModel):
     missing_in_data: List[str]
     unused_in_data: List[str]
     match: bool
+    data_quality_errors: Optional[List[str]] = Field(default_factory=list)
+    invalid_rows_count: Optional[int] = 0
 
 
 class TemplateUploadResponse(BaseModel):
