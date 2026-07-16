@@ -256,13 +256,37 @@ STAR--DOC/
 
 ### Prerrequisitos
 
-| Componente | Versión | Requerido |
-|-----------|---------|-----------|
-| Python | 3.11+ | ✅ Sí |
-| PostgreSQL | 15+ | ✅ Sí |
-| Redis | 7+ | ⚠️ Recomendado |
-| IPFS Kubo | 0.28+ | ⚠️ Opcional (para Web3) |
-| Node.js | 18+ | ⚠️ Opcional (para Playwright) |
+| Componente | Versión | Requerido | Descripción |
+|-----------|---------|-----------|-------------|
+| Python | 3.11+ | ✅ Sí | Intérprete principal del backend de FastAPI |
+| PostgreSQL | 15+ | ✅ Sí | Base de datos relacional principal |
+| Pandoc | 3.0+ | ✅ Sí | Conversión bidireccional entre Markdown y Word (`.docx`) |
+| LibreOffice | 7.0+ | ⚠️ Recomendado | Conversión fiel de Word (`.docx`) a PDF en el servidor |
+| Redis | 7+ | ⚠️ Recomendado | Caché, rate limiting y cola de tareas en segundo plano |
+| IPFS Desktop / Kubo | 0.28+ | ⚠️ Opcional | Almacenamiento Web3 descentralizado e inmutable |
+| Node.js | 18+ | ⚠️ Opcional | Ejecución del motor Playwright (crawler judicial de IA) |
+
+### ⚙️ Dependencias del Sistema Adicionales
+
+Para el correcto funcionamiento de las conversiones de documentos y la integración criptográfica Web3, instala los siguientes paquetes del sistema según tu sistema operativo:
+
+#### 1. Herramientas de Documentos (Pandoc & LibreOffice)
+- **Pandoc** (Indispensable para importar/exportar plantillas y borradores entre formatos):
+  - **Linux (Debian/Ubuntu):** `sudo apt install pandoc`
+  - **macOS:** `brew install pandoc`
+  - **Windows:** `winget install JohnMacFarlane.Pandoc` o `choco install pandoc`
+- **LibreOffice** (Indispensable para compilar borradores en documentos PDF finales con diseño profesional):
+  - **Linux (Debian/Ubuntu):** `sudo apt install libreoffice`
+  - **macOS:** `brew install --cask libreoffice` o descarga el instalador oficial.
+  - **Windows:** `winget install TheDocumentFoundation.LibreOffice` o descarga el instalador oficial.
+
+#### 2. Infraestructura Descentralizada IPFS
+Para certificar contratos y generar la bitácora de cadena de custodia Web3:
+- **IPFS Desktop (Recomendado):** Interfaz gráfica intuitiva con nodo Kubo incorporado.
+  - Descárgalo e instálalo desde su repositorio oficial en GitHub: [IPFS Desktop Releases](https://github.com/ipfs/ipfs-desktop).
+- **Kubo CLI (Alternativa):**
+  - Instálalo siguiendo la [Guía Oficial de IPFS](https://docs.ipfs.tech/install/command-line/).
+- **Configuración local:** El backend de STAR-DOC interactúa automáticamente con la API RPC local de tu nodo IPFS en `http://127.0.0.1:5001`. Asegúrate de que el daemon esté corriendo (`ipfs daemon` en consola o la app de escritorio abierta).
 
 ### 1️⃣ Clonar el Repositorio
 
@@ -382,11 +406,11 @@ Para gestión de citas y agenda:
 4. Ejecuta `python scripts/auth_google_calendar.py` para obtener el refresh token
 
 ### Pinata / IPFS (Opcional)
-Para almacenamiento Web3 inmutable:
+Para almacenamiento Web3 inmutable y versionado de expedientes:
 
-1. Regístrate en [Pinata](https://app.pinata.cloud/)
-2. Crea API keys en el dashboard
-3. Para IPFS local, instala [Kubo](https://docs.ipfs.tech/install/command-line/)
+1. Regístrate en [Pinata](https://app.pinata.cloud/) para habilitar el anclaje (pinning) persistente de archivos en la nube descentralizada.
+2. Genera credenciales en el dashboard de Pinata y configura las variables `PINATA_API_KEY`, `PINATA_API_SECRET` y `PINATA_JWT` en tu archivo `.env`.
+3. Para la integración con el nodo local, instala **IPFS Desktop** o **Kubo CLI** siguiendo las instrucciones en la sección [Dependencias del Sistema Adicionales](#⚙️-dependencias-del-sistema-adicionales).
 
 ### SMTP Email (Opcional)
 Para notificaciones y firma digital:
