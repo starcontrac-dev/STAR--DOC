@@ -52,7 +52,7 @@ Descubre el funcionamiento completo y la visión detrás de STAR-DOC en nuestro 
 
 ### 🤖 Motor de IA Legal (Gemini )
 - **Chat Legal Inteligente** con streaming SSE en tiempo real
-- **Cascada de Modelos**: `gemini-2.5-flash` → `gemini-2.5-pro` → `gemini-2.5-flash-lite` (fallback automático)
+- **Cascada de Modelos**: `GEMINI-` → ... → (fallback automático)
 - **Rotación de API Keys** con balanceo de carga para alta disponibilidad
 - **Herramientas de IA (Function Calling)**:
   - 🔍 Buscador de Jurisprudencia en tiempo real (Brave Search + Scraping de Altas Cortes)
