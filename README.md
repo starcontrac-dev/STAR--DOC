@@ -142,44 +142,44 @@ Descubre el funcionamiento completo y la visión detrás de STAR-DOC en nuestro 
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                         FRONTEND                                  │
+│                         FRONTEND                                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-│  │  Landing Page │  │  Login/      │  │  Dashboard   │            │
+│  │  Landing Page │  │  Login/      │  │  Dashboard   │           │
 │  │  (HTMX)      │  │  Register    │  │  (Alpine.js) │            │
 │  └──────────────┘  └──────────────┘  └──────────────┘            │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
 │  │  Chat IA     │  │  Editor de   │  │  Bóveda      │            │
 │  │  (SSE Stream)│  │  Documentos  │  │  IPFS/Web3   │            │
 │  └──────────────┘  └──────────────┘  └──────────────┘            │
-│            │               │                │                     │
-│       (EventSource)   (Fetch API)      (Fetch API)                │
+│            │               │                │                    │
+│       (EventSource)   (Fetch API)      (Fetch API)               │
 └────────────┼───────────────┼────────────────┼─────────────────────┘
              │               │                │
              ▼               ▼                ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                     BACKEND (FastAPI)                              │
-│  ┌────────────────────────────────────────────────────────────┐   │
-│  │                     API ROUTERS                             │   │
-│  │  auth │ ai │ documents │ templates │ generation │ ipfs     │   │
-│  │  signatures │ appointments │ meetings │ tts │ compliance   │   │
-│  └────────────────────────────────────────────────────────────┘   │
-│                              │                                    │
-│                    ┌─────────┴─────────┐                          │
-│                    ▼                   ▼                          │
+│                     BACKEND (FastAPI)                            │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │                     API ROUTERS                            │  │
+│  │  auth │ ai │ documents │ templates │ generation │ ipfs     │  │
+│  │  signatures │ appointments │ meetings │ tts │ compliance   │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│                    ┌─────────┴─────────┐                         │
+│                    ▼                   ▼                         │
 │  ┌──────────────────────┐  ┌──────────────────────┐              │
-│  │  SERVICES (Lógica)   │  │  DATABASE (SQLModel)  │              │
-│  │  ai_service          │  │  PostgreSQL (asyncpg)  │              │
-│  │  document_service    │  │  18 modelos de datos   │              │
-│  │  signature_service   │  │  Alembic migraciones   │              │
+│  │  SERVICES (Lógica)   │  │  DATABASE (SQLModel)  │             │
+│  │  ai_service          │  │  PostgreSQL (asyncpg)  │            │
+│  │  document_service    │  │  18 modelos de datos   │            │
+│  │  signature_service   │  │  Alembic migraciones   │            │
 │  │  ipfs_service        │  └──────────────────────┘              │
 │  │  email_service       │                                        │
 │  └──────────────────────┘                                        │
-│         │              │              │                            │
-│         ▼              ▼              ▼                            │
-│  ┌──────────┐  ┌──────────────┐  ┌──────────────┐               │
-│  │ Gemini   │  │ Google APIs  │  │ IPFS Kubo +  │               │
-│  │ AI API   │  │ Drive/Cal    │  │ Pinata Cloud │               │
-│  └──────────┘  └──────────────┘  └──────────────┘               │
+│         │              │              │                          │
+│         ▼              ▼              ▼                          │
+│  ┌──────────┐  ┌──────────────┐  ┌──────────────┐                │
+│  │ Gemini   │  │ Google APIs  │  │ IPFS Kubo +  │                │
+│  │ AI API   │  │ Drive/Cal    │  │ Pinata Cloud │                │
+│  └──────────┘  └──────────────┘  └──────────────┘                │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -500,12 +500,11 @@ curl -X POST http://localhost:8000/generation/generate \
 - [x] Cadena de custodia inmutable
 - [x] Videoconferencias con Jitsi Meet
 - [x] Text-to-Speech integrado
+- [x] RAG avanzado con embeddings vectoriales
 - [x] PWA instalable
-- [ ] Integración con blockchain (Ethereum/Polygon)
-- [ ] RAG avanzado con embeddings vectoriales
-- [ ] Multi-idioma (EN, PT, FR)
+- [ ] Integración de NFTs con blockchain de (SOLANA)
 - [ ] Marketplace de plantillas
-- [ ] Plugin para Microsoft Word
+
 
 ---
 
