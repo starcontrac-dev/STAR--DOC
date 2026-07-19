@@ -410,7 +410,7 @@ Para almacenamiento Web3 inmutable y versionado de expedientes:
 
 1. Regístrate en [Pinata](https://app.pinata.cloud/) para habilitar el anclaje (pinning) persistente de archivos en la nube descentralizada.
 2. Genera credenciales en el dashboard de Pinata y configura las variables `PINATA_API_KEY`, `PINATA_API_SECRET` y `PINATA_JWT` en tu archivo `.env`.
-3. Para la integración con el nodo local, instala **IPFS Desktop** o **Kubo CLI** siguiendo las instrucciones en la sección [Dependencias del Sistema Adicionales](#⚙️-dependencias-del-sistema-adicionales).
+3. Para la integración con el nodo local, instala **IPFS Desktop** o **Kubo CLI** siguiendo las instrucciones en la sección [Dependencias del Sistema Adicionales](#⚙️(https://github.com/ipfs/ipfs-desktop/releases)).
 
 ### SMTP Email (Opcional)
 Para notificaciones y firma digital:
